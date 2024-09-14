@@ -109,10 +109,10 @@ export default function Camera() {
         {/* Overlay content goes here */}
         <Image src="/arrow.png" alt="Arrow" width={100} height={100} />
         <h1 style={{ color: "white", textAlign: "center", marginTop: "20px" }}>
-          {orientation?.alpha}, {orientation?.beta}, {orientation?.gamma}
+          {coords?.latitude}, {coords?.longitude}
         </h1>
         <h1 style={{ color: "white", textAlign: "center", marginTop: "20px" }}>
-          {coords?.latitude}, {coords?.longitude}
+          {orientation?.alpha}, {orientation?.beta}, {orientation?.gamma}
         </h1>
       </div>
     </div>
