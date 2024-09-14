@@ -26,29 +26,44 @@ async function getMedia() {
       return;
     }
 
-    const track = stream.getVideoTracks()[0];
-
     video.srcObject = stream;
     video.onloadedmetadata = () => {
       void video.play();
     };
   } catch (err) {
-    /* handle the error */
     console.error(err);
   }
 }
 
+function getLocation(
+  onChangeLocation: (coords: GeolocationCoordinates) => void,
+) {
+  if (!navigator.geolocation) {
+    return;
+  }
+
+  const onSuccess: PositionCallback = (res) => {
+    console.log(res);
+
+    onChangeLocation(res.coords);
+  };
+  const onError: PositionErrorCallback = (err) => {
+    console.log(err);
+  };
+
+  return navigator.geolocation.watchPosition(onSuccess, onError, {
+    enableHighAccuracy: true,
+  });
+}
+
 export default function Camera() {
   const [orientation, setOrientation] = useState<Orientation>();
-
-  // console.log(window.isSecureContext);
+  const [coords, setCoords] = useState<GeolocationCoordinates>();
 
   useEffect(() => {
     void getMedia();
 
     const handleOrientationEvent = (event: DeviceOrientationEvent): void => {
-      console.log(event);
-
       setOrientation({
         alpha: event.alpha ?? 0,
         beta: event.beta ?? 0,
@@ -57,28 +72,16 @@ export default function Camera() {
     };
     window.addEventListener("deviceorientation", handleOrientationEvent);
 
+    const watchId = getLocation(setCoords);
+
     return () => {
       window.removeEventListener("deviceorientation", handleOrientationEvent);
+
+      if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+      }
     };
   }, []);
-
-  // function requestOrientationPermission() {
-  //   if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-  //       // Request permission for iOS 13+ devices
-  //       DeviceOrientationEvent.requestPermission()
-  //           .then(function(permissionState) {
-  //               if (permissionState === 'granted') {
-  //                   window.addEventListener('deviceorientation', handleOrientation);
-  //               } else {
-  //                   console.log('Permission denied');
-  //               }
-  //           })
-  //           .catch(console.error);
-  //   } else {
-  //       // Non-iOS devices or older versions
-  //       window.addEventListener('deviceorientation', handleOrientation);
-  //   }
-  // }
 
   return (
     <div style={{ position: "relative", width: "100vw", height: "80vh" }}>
@@ -107,6 +110,9 @@ export default function Camera() {
         <Image src="/arrow.png" alt="Arrow" width={100} height={100} />
         <h1 style={{ color: "white", textAlign: "center", marginTop: "20px" }}>
           {orientation?.alpha}, {orientation?.beta}, {orientation?.gamma}
+        </h1>
+        <h1 style={{ color: "white", textAlign: "center", marginTop: "20px" }}>
+          {coords?.latitude}, {coords?.longitude}
         </h1>
       </div>
     </div>
