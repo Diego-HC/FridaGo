@@ -66,6 +66,13 @@ export default async function Home() {
                 Go to Admin Dashboard
               </Link>
             )}
+
+            <Link
+              href="/camera"
+              className="mt-4 rounded-full bg-blue-500 px-6 py-3 text-lg font-semibold text-white transition hover:bg-blue-600"
+            >
+              Go to Camera
+            </Link>
           </div>
 
           {session?.user && <LatestPost />}
