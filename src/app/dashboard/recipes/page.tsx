@@ -128,6 +128,7 @@ export default function Recepies() {
                           id: session.user?.id,
                           name: session.user?.name as string | null,
                           image: session.user?.image as string | null,
+                          role: "user",
                           emailVerified: new Date(),
                         });
                       } else {
