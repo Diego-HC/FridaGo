@@ -98,7 +98,7 @@ export default function Recepies() {
   const utils = api.useUtils();
 
   return (
-    <div className="bg-slate-50 overflow-hidden h-screen">
+    <div className="bg-slate-50 h-screen">
       <h2 className=" ml-12 text-3xl font-semibold text-gray-700">
         Admin Dashboard
       </h2>
@@ -239,75 +239,77 @@ export default function Recepies() {
 
         {recepieLoading && <p>Loading Recipe...</p>}
         {recipe && (
-          <Card className="w-3/4">
-            <CardHeader>
-              <div className="flex w-full justify-between">
-                <p className="text-xl font-bold">{recipe.title}</p>
-                <div className="flex space-x-4">
-                  <Button variant={"outline"}>
-                    {recipe.Users?.length == 0 ? (
-                      <Star className="h-6 w-6" />
-                    ) : (
-                      <StarOff className="h-6 w-6" fill="yellow" />
-                    )}
-                  </Button>
-                  <Button>
-                    <ShoppingBasket className="h-6 w-6" />
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setRecipe(null);
-                      setRecipeUrl(null);
-                    }}
-                  >
-                    Close
-                  </Button>
+          <div className="flex justify-center pt-12">
+            <Card className="w-3/4">
+              <CardHeader>
+                <div className="flex w-full justify-between">
+                  <p className="text-xl font-bold">{recipe.title}</p>
+                  <div className="flex space-x-4">
+                    <Button variant={"outline"}>
+                      {recipe.Users?.length == 0 ? (
+                        <Star className="h-6 w-6" />
+                      ) : (
+                        <StarOff className="h-6 w-6" fill="yellow" />
+                      )}
+                    </Button>
+                    <Button>
+                      <ShoppingBasket className="h-6 w-6" />
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setRecipe(null);
+                        setRecipeUrl(null);
+                      }}
+                    >
+                      Close
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="">
-              <div className="flex space-x-2">
-                <div>
-                  <img
-                    src={recipeUrl!}
-                    alt={recipe.title}
-                    className="h-48 w-48"
-                  />
+              </CardHeader>
+              <CardContent className="">
+                <div className="flex space-x-2">
+                  <div>
+                    <img
+                      src={recipeUrl!}
+                      alt={recipe.title}
+                      className="pt-2 pl-4 h-48 w-48"
+                    />
+                  </div>
+                  <div className="flex flex-col px-6">
+                    <p className="text-lg font-semibold pb-4">Ingredients:</p>
+                    <ul className="flex max-h-80 w-full flex-col overflow-auto gap-4">
+                      {recipe.ingredients.map((ingredient) => (
+                        <li key={ingredient.id} className="flex space-x-2">
+                          <Card className="flex w-full flex-col align-top">
+                            <CardHeader className="text-semibold">{ingredient.name}</CardHeader>
+                            <CardContent className="flex w-full">
+                              <div className="flex justify-center">
+                                <img
+                                  src={ingredient.image_url}
+                                  alt={ingredient.name}
+                                  className="h-10 w-10 object-cover pr-2 pt-2"
+                                />
+                                <p className="text-gray-500">{ingredient.description}</p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <p className="text-lg font-semibold">Ingredients:</p>
-                  <ul className="flex max-h-72 w-full flex-col overflow-auto">
-                    {recipe.ingredients.map((ingredient) => (
-                      <li key={ingredient.id} className="flex space-x-2">
-                        <Card className="flex w-full flex-col">
-                          <CardHeader>{ingredient.name}</CardHeader>
-                          <CardContent className="flex w-full">
-                            <div className="flex justify-center">
-                              <img
-                                src={ingredient.image_url}
-                                alt={ingredient.name}
-                                className="h-10 w-10 object-cover"
-                              />
-                              <p>{ingredient.description}</p>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <p className="text-lg font-semibold">Instructions:</p>
-              <ol>
-                {recipe.instructions.map((instruction) => (
-                  <li key={instruction} className="flex space-x-2">
-                    <p className="text-sm font-bold">-</p>
-                    <p>{instruction}</p>
-                  </li>
-                ))}
-              </ol>
-            </CardContent>
-          </Card>
+                <p className="text-lg font-semibold">Instructions:</p>
+                <ol>
+                  {recipe.instructions.map((instruction) => (
+                    <li key={instruction} className="flex space-x-2">
+                      <p className="text-sm font-bold">-</p>
+                      <p>{instruction}</p>
+                    </li>
+                  ))}
+                </ol>
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
     </div>
