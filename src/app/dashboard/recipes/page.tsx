@@ -264,7 +264,7 @@ export default function Recepies() {
             <div className="flex space-x-2">
               <div>
                 <img
-                  src={recipeUrl ?? ""}
+                  src={recipeUrl!}
                   alt={recipe.title}
                   className="h-48 w-48"
                 />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { DataTable } from "./data-table";
 import { Button } from "r/components/ui/button";
 import { columns } from "./columns";
@@ -14,7 +14,10 @@ import {
   waitTimeLane,
 } from "./dummyData";
 
+import Chatbot from "./Chatbot";
+
 export default function AdminDashboard() {
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const supabase = createClientComponentClient();
 
@@ -50,12 +53,23 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleChatOpen = () => {
+    setIsChatOpen(true);
+  };
+
+  const handleChatClosed = () => {
+    setIsChatOpen(false);
+  };
+
   return (
     <div className="bg-gray-70 min-h-screen p-8">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-5xl font-bold text-gray-800">FridaGo</h1>
         <Button variant="outline" onClick={triggerFileInput}>
           Upload data
+        </Button>
+        <Button variant="outline" onClick={handleChatOpen}>
+          Open Chat
         </Button>
         <input
           type="file"
@@ -93,11 +107,11 @@ export default function AdminDashboard() {
           </h3>
           <BarChart
             data={sentimentData}
-            index="fecha"
+            index="date"
             categories={["Positive", "Neutral", "Negative"]}
             colors={["emerald", "gray", "rose"]}
-            xAxisLabel="Fecha"
-            yAxisLabel="Cantidad"
+            xAxisLabel="Date"
+            yAxisLabel="Quantity"
           />
         </Card>
 
@@ -122,7 +136,7 @@ export default function AdminDashboard() {
               <span>Cleaning products</span>
             </p>
             <CategoryBar
-              values={[40, 30, 20, 10]}
+              values={[40, 30, 15, 15]}
               colors={["rose", "orange", "yellow", "emerald"]}
               markerValue={getRandomInt(70, 100)}
             />
@@ -130,7 +144,7 @@ export default function AdminDashboard() {
               <span>Drinks</span>
             </p>
             <CategoryBar
-              values={[40, 30, 20, 10]}
+              values={[40, 30, 15, 15]}
               colors={["rose", "orange", "yellow", "emerald"]}
               markerValue={getRandomInt(40, 90)}
             />
@@ -138,13 +152,23 @@ export default function AdminDashboard() {
               <span>Snacks</span>
             </p>
             <CategoryBar
-              values={[40, 30, 20, 10]}
+              values={[40, 30, 15, 15]}
               colors={["rose", "orange", "yellow", "emerald"]}
               markerValue={getRandomInt(60, 83)}
             />
           </Card>
         </div>
       </div>
+      {isChatOpen && (
+        <Chatbot
+          onClose={handleChatClosed}
+          data={{
+            dummyDataAisle,
+            sentimentData,
+            waitTimeLane,
+          }}
+        />
+      )}
     </div>
   );
 }
