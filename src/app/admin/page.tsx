@@ -15,9 +15,13 @@ import {
 } from "./dummyData";
 
 import Chatbot from "./Chatbot";
+import ImageView from "./image-view";
 
 export default function AdminDashboard() {
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [openView, setOpenView] = useState(false);
+  const [view, setView] = useState("heatmap");
+  const [viewTitle, setViewTitle] = useState("Heatmap");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const supabase = createClientComponentClient();
 
@@ -55,6 +59,12 @@ export default function AdminDashboard() {
 
   const handleChatOpen = () => {
     setIsChatOpen(true);
+  };
+
+  const handleOpenView = (src: string, alt: string) => {
+    setView(src);
+    setViewTitle(alt);
+    setOpenView(true);
   };
 
   const handleChatClosed = () => {
@@ -159,6 +169,22 @@ export default function AdminDashboard() {
           </Card>
         </div>
       </div>
+      <div className="flex flex-row">
+        <Card>
+          <img src="http://localhost:8000/aisle_view" alt="Video Feed" className=""></img>
+        </Card>
+
+        <div className="flex flex-col">
+          <Button variant="outline" className="h-40" onClick={() => handleOpenView("http://localhost:8000/get_heatmap", "Heatmap")}>
+            {/* <Card> */}
+            <img src="http://localhost:8000/get_heatmap" alt="Video Feed" className="p-2 w-48"></img>
+            {/* </Card> */}
+          </Button>
+          <Button variant="outline" className="h-40" onClick={() => handleOpenView("http://localhost:8000/get_trajectories", "Trajectories")}>
+            <img src="http://localhost:8000/get_trajectories" alt="Video Feed" className="p-2 w-48"></img>
+          </Button>
+        </div>
+      </div>
       {isChatOpen && (
         <Chatbot
           onClose={handleChatClosed}
@@ -168,6 +194,9 @@ export default function AdminDashboard() {
             waitTimeLane,
           }}
         />
+      )}
+      {openView && (
+        <ImageView src={view} als={viewTitle} onClose={() => setOpenView(false)} open={openView} />
       )}
     </div>
   );
