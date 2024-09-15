@@ -1,198 +1,78 @@
-interface Detalle {
-  area: string;
-  cantidad: string;
-}
-
-interface Pasillo {
-  id: number;
-  fecha: string;
-  detalles: Detalle[];
-}
-
-interface TransformedData {
-  fecha: string;
-  data: Record<string, string>; // Mapping area (dynamic) to string (cantidad)
-}
 export function getRandomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-const dummyDataPasillo: Pasillo[] = [
+type Aisle = {
+  id: number;
+  date: string;
+  Snacks: string;
+  Fruits: string;
+  Drinks: string;
+};
+
+export const dummyDataAisle: Aisle[] = [
   {
-    id: 1,
-    detalles: [
-      {
-        area: "Botana",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-      {
-        area: "Frutas",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-    ],
-    fecha: "Jan 2023",
+    id: getRandomInt(1, 10000),
+    date: "2023-01-01",
+    Snacks: getRandomInt(1, 100).toString(),
+    Fruits: getRandomInt(1, 100).toString(),
+    Drinks: getRandomInt(1, 100).toString(),
   },
   {
-    id: 2,
-    detalles: [
-      {
-        area: "Botana",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-      {
-        area: "Frutas",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-    ],
-    fecha: "Feb 2023",
+    id: getRandomInt(1, 10000),
+    date: "2023-02-01",
+    Snacks: getRandomInt(1, 100).toString(),
+    Fruits: getRandomInt(1, 100).toString(),
+    Drinks: getRandomInt(1, 100).toString(),
   },
   {
-    id: 3,
-    detalles: [
-      {
-        area: "Botana",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-      {
-        area: "Frutas",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-    ],
-    fecha: "Mar 2023",
+    id: getRandomInt(1, 10000),
+    date: "2023-03-01",
+    Snacks: getRandomInt(1, 100).toString(),
+    Fruits: getRandomInt(1, 100).toString(),
+    Drinks: getRandomInt(1, 100).toString(),
   },
   {
-    id: 4,
-    detalles: [
-      {
-        area: "Botana",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-      {
-        area: "Frutas",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-    ],
-    fecha: "Apr 2023",
+    id: getRandomInt(1, 10000),
+    date: "2023-04-01",
+    Snacks: getRandomInt(1, 100).toString(),
+    Fruits: getRandomInt(1, 100).toString(),
+    Drinks: getRandomInt(1, 100).toString(),
   },
   {
-    id: 5,
-    detalles: [
-      {
-        area: "Botana",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-      {
-        area: "Frutas",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-    ],
-    fecha: "May 2023",
+    id: getRandomInt(1, 10000),
+    date: "2023-05-01",
+    Snacks: getRandomInt(1, 100).toString(),
+    Fruits: getRandomInt(1, 100).toString(),
+    Drinks: getRandomInt(1, 100).toString(),
   },
   {
-    id: 6,
-    detalles: [
-      {
-        area: "Botana",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-      {
-        area: "Frutas",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-    ],
-    fecha: "Jun 2023",
-  },
-  {
-    id: 7,
-    detalles: [
-      {
-        area: "Botana",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-      {
-        area: "Frutas",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-    ],
-    fecha: "Jul 2023",
-  },
-  {
-    id: 8,
-    detalles: [
-      {
-        area: "Botana",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-      {
-        area: "Frutas",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-    ],
-    fecha: "Aug 2023",
-  },
-  {
-    id: 9,
-    detalles: [
-      {
-        area: "Botana",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-      {
-        area: "Frutas",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-    ],
-    fecha: "Sep 2023",
-  },
-  {
-    id: 10,
-    detalles: [
-      {
-        area: "Botana",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-      {
-        area: "Frutas",
-        cantidad: getRandomInt(1, 1000).toString(),
-      },
-    ],
-    fecha: "Oct 2023",
+    id: getRandomInt(1, 10000),
+    date: "2023-06-01",
+    Snacks: getRandomInt(1, 100).toString(),
+    Fruits: getRandomInt(1, 100).toString(),
+    Drinks: getRandomInt(1, 100).toString(),
   },
 ];
-
-const transformedDataPasillo = dummyDataPasillo.reduce<
-  Record<string, TransformedData>
->(
-  (acc, pasillo) => {
-    const fecha = pasillo.fecha;
-    if (!acc[fecha]) {
-      acc[fecha] = { fecha, data: {} }; // Initialize the 'data' field for each 'fecha'
-    }
-
-    pasillo.detalles.forEach((detalle) => {
-      if (!acc[fecha]!.data[detalle.area]) {
-        acc[fecha]!.data[detalle.area] = "0"; // Initialize the value if it doesn't exist
-      }
-      acc[fecha]!.data[detalle.area] = detalle.cantidad; // Update with the cantidad
-    });
-
-    return acc;
-  },
-  {} as Record<string, TransformedData>,
-);
-
-export const finalDataPasillo = Object.values(transformedDataPasillo);
-
 //----
 
 export const sentimentData = [
-  { name: "Positive", value: getRandomInt(1, 100) },
-  { name: "Neutral", value: getRandomInt(1, 100) },
-  { name: "Negative", value: getRandomInt(1, 100) },
+  {
+    Positive: getRandomInt(1, 50),
+    Neutral: getRandomInt(1, 40),
+    Negative: getRandomInt(1, 20),
+    date: "Jan 2023",
+  },
+  {
+    Positive: getRandomInt(1, 50),
+    Neutral: getRandomInt(1, 30),
+    Negative: getRandomInt(1, 30),
+    date: "Feb 2023",
+  },
 ];
 
-export const tiempoFila = [
-  { name: "Fila 1", value: getRandomInt(1, 30) },
-  { name: "Fila 2", value: getRandomInt(1, 30) },
-  { name: "Fila 3", value: getRandomInt(1, 30) },
+export const waitTimeLane = [
+  { name: "First lane", value: getRandomInt(1, 30) },
+  { name: "Second lane", value: getRandomInt(1, 30) },
+  { name: "Third lane", value: getRandomInt(1, 30) },
 ];

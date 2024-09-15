@@ -6,12 +6,12 @@ import { Button } from "r/components/ui/button";
 import { columns } from "./columns";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { v4 as uuidv4 } from "uuid";
-import { Card, CategoryBar, BarList, LineChart } from "@tremor/react";
+import { Card, CategoryBar, BarList, LineChart, BarChart } from "@tremor/react";
 import {
-  finalDataPasillo,
+  dummyDataAisle,
   getRandomInt,
   sentimentData,
-  tiempoFila,
+  waitTimeLane,
 } from "./dummyData";
 
 export default function AdminDashboard() {
@@ -53,7 +53,7 @@ export default function AdminDashboard() {
   return (
     <div className="bg-gray-70 min-h-screen p-8">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-5xl font-bold text-gray-800">Admin Dashboard</h1>
+        <h1 className="text-5xl font-bold text-gray-800">FridaGo</h1>
         <Button variant="outline" onClick={triggerFileInput}>
           Upload data
         </Button>
@@ -66,20 +66,21 @@ export default function AdminDashboard() {
         />
       </div>
 
-      <h2 className="mb-6 text-3xl font-semibold text-gray-700">Data</h2>
-      <h3>Aisle Data</h3>
-
+      <h2 className="mb-6 text-3xl font-semibold text-gray-700">
+        Admin Dashboard
+      </h2>
+      <h3>Summarized aisle data in the supermarket</h3>
       <div className="my-10">
         <Card>
           <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong text-lg font-medium">
-            Cantidad personas por pasillo y fecha
+            Number of people per aisle and date
           </h3>
           <LineChart
-            data={finalDataPasillo}
-            index="fecha"
-            categories={["Botana", "Frutas"]}
-            xAxisLabel="Fecha"
-            yAxisLabel="Cantidad"
+            data={dummyDataAisle}
+            index="date"
+            categories={["Snacks", "Fruits", "Drinks"]}
+            xAxisLabel="Date"
+            yAxisLabel="Quantity"
             yAxisWidth={65}
           />
         </Card>
@@ -88,34 +89,37 @@ export default function AdminDashboard() {
       <div className="my-10 flex">
         <Card className="w-1/2">
           <h3 className="text-tremor-title text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
-            Análisis sentimiento clientes después de su compra
+            Sentiment analysis of customers after their purchase
           </h3>
-          <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content mt-4 flex items-center justify-between">
-            <span>Sentimiento</span>
-            <span>Cantidad Clientes</span>
-          </p>
-          <BarList data={sentimentData} sortOrder="none" />
+          <BarChart
+            data={sentimentData}
+            index="fecha"
+            categories={["Positive", "Neutral", "Negative"]}
+            colors={["emerald", "gray", "rose"]}
+            xAxisLabel="Fecha"
+            yAxisLabel="Cantidad"
+          />
         </Card>
 
         <Card className="w-1/2">
           <h3 className="text-tremor-title text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
-            Cantidad espera por fila
+            Wait time per lane
           </h3>
           <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content mt-4 flex items-center justify-between">
-            <span>Fila</span>
-            <span>Tiempo (min)</span>
+            <span>Lane</span>
+            <span>Wait time (min)</span>
           </p>
-          <BarList data={tiempoFila} sortOrder="descending" />
+          <BarList data={waitTimeLane} sortOrder="descending" />
         </Card>
       </div>
       <div className="space-y-3">
         <p className="text-center font-mono text-sm text-slate-500">
-          Porcentaje Stock por area
+          Percentage Stock by Area
         </p>
         <div className="flex justify-center">
           <Card className="max-w-sm">
             <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content mt-4 flex items-center justify-between">
-              <span>Productos limpieza</span>
+              <span>Cleaning products</span>
             </p>
             <CategoryBar
               values={[40, 30, 20, 10]}
@@ -123,7 +127,7 @@ export default function AdminDashboard() {
               markerValue={getRandomInt(70, 100)}
             />
             <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content mt-4 flex items-center justify-between">
-              <span>Bebidas</span>
+              <span>Drinks</span>
             </p>
             <CategoryBar
               values={[40, 30, 20, 10]}
@@ -131,7 +135,7 @@ export default function AdminDashboard() {
               markerValue={getRandomInt(40, 90)}
             />
             <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content mt-4 flex items-center justify-between">
-              <span>Botana</span>
+              <span>Snacks</span>
             </p>
             <CategoryBar
               values={[40, 30, 20, 10]}
