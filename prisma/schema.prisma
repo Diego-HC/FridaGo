@@ -1,106 +1,107 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider  = "postgresql"
-    url       = env("DATABASE_URL")
-    directUrl = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Post {
-    id          Int      @id @default(autoincrement())
-    name        String
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
-    createdById String
-    createdBy   User     @relation(fields: [createdById], references: [id])
+  id          Int      @id @default(autoincrement())
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
 
-    @@index([name])
+  @@index([name])
 }
 
 model Account {
-    id                       String  @id @default(cuid())
-    userId                   String
-    type                     String
-    provider                 String
-    providerAccountId        String
-    refresh_token            String? // @db.Text
-    access_token             String? // @db.Text
-    expires_at               Int?
-    token_type               String?
-    scope                    String?
-    id_token                 String? // @db.Text
-    session_state            String?
-    refresh_token_expires_in Int?
-    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                       String  @id @default(cuid())
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String?
+  access_token             String?
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String?
+  session_state            String?
+  refresh_token_expires_in Int?
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@unique([provider, providerAccountId])
+  @@unique([provider, providerAccountId])
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-    id             String     @id @default(cuid())
-    name           String?
-    email          String?    @unique
-    emailVerified  DateTime?
-    image          String?
-    accounts       Account[]
-    posts          Post[]
-    sessions       Session[]
-    UserList       UserList[]
-    MarkedRecepies Recepie[]  @relation("RecepieToUser")
+  id             String     @id @default(cuid())
+  name           String?
+  email          String?    @unique
+  emailVerified  DateTime?
+  image          String?
+  accounts       Account[]
+  posts          Post[]
+  sessions       Session[]
+  UserList       UserList[]
+  MarkedRecepies Recepie[]  @relation("RecepieToUser")
 }
 
 model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
-    @@unique([identifier, token])
+  @@unique([identifier, token])
 }
 
 model Inventory {
-    id          Int        @id @default(autoincrement())
-    name        String     @unique
-    description String
-    location    String
-    image_url   String
-    createdAt   DateTime   @default(now())
-    updatedAt   DateTime   @updatedAt
-    recepieId   String?
-    UserList    UserList[]
-    Recepies    Recepie[]  @relation("InventoryToRecepie")
+  id          Int                    @id @default(autoincrement())
+  name        String                 @unique
+  description String
+  location    String
+  image_url   String
+  createdAt   DateTime               @default(now())
+  recepieId   String?
+  embd        Unsupported("vector")?
+  UserList    UserList[]
+  Recepies    Recepie[]              @relation("InventoryToRecepie")
 
-    @@index([name])
+  @@index([name])
 }
 
 model UserList {
-    id            String    @id @default(cuid())
-    quantity      Int
-    userId        String
-    inventoryName String
-    item          Inventory @relation(fields: [inventoryName], references: [name])
-    user          User      @relation(fields: [userId], references: [id])
+  id            String    @id @default(cuid())
+  quantity      Int
+  userId        String
+  inventoryName String
+  item          Inventory @relation(fields: [inventoryName], references: [name])
+  user          User      @relation(fields: [userId], references: [id])
 
-    @@index([userId])
+  @@index([userId])
 }
 
 model Recepie {
-    id           String                 @id @default(cuid())
-    name         String                 @unique
-    description  String
-    Instructions String
-    embd         Unsupported("vector")?
-    Ingredients  Inventory[]            @relation("InventoryToRecepie")
-    Users        User[]                 @relation("RecepieToUser")
+  id           String                 @id @default(cuid())
+  name         String
+  description  String
+  Instructions String[]
+  image_url    String?
+  embd         Unsupported("vector")?
+  Ingredients  Inventory[]            @relation("InventoryToRecepie")
+  Users        User[]                 @relation("RecepieToUser")
 
-    @@index([name])
+  @@index([name])
 }

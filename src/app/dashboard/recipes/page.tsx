@@ -6,6 +6,7 @@ import OpenAI from "openai";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
 import { Button } from "r/components/ui/button";
+import { Input } from "r/components/ui/input";
 
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
@@ -57,50 +58,123 @@ async function getRecepie({ input }: { input: string }) {
 }
 
 export default function Recepies() {
-  const [recipe, setRecipe] = useState<
-    (typeof ResponseSchema)["_output"] | null
-  >(null);
+  const [recipe, setRecipe] = useState<{
+    title: string;
+    ingredients: {
+      id: number;
+      name: string;
+      description: string;
+      image_url: string;
+    }[];
+    instructions: string[];
+  } | null>(null);
 
   const [recipeUrl, setRecipeUrl] = useState<string | null>(null);
+  // const { mutate: mut } =
+  //   api.products.refreshAllProductEmbeddings.useMutation();
+  const { mutateAsync: createRecipeMut } =
+    api.recipes.createRecipeFromPrompt.useMutation();
+  const [prompt, setPrompt] = useState<string>("");
+
+  const [recepieLoading, setRecepieLoading] = useState<boolean>(false);
+
+  const { data: recepies, isLoading: isRecepiesLoading } =
+    api.recipes.getRecipes.useQuery();
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center align-middle">
-      <Card className="w-1/5">
-        <CardHeader>My list</CardHeader>
+    <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center p-6">
+      {isRecepiesLoading && <p>Loading Recepies...</p>}
+      {recepies && (
+        <div>
+          {recepies.map((recepie) => (
+            <p key={recepie.id}>{recepie.name}</p>
+          ))}
+        </div>
+      )}
+      <Card className="w-1/5 pt-6">
         <CardContent>
-          <p>Hola</p>
-          <Button
+          <Input
+            placeholder="Prompt"
+            onChange={(e) => setPrompt(e.target.value ?? "")}
+          />
+          {/* <Button
             onClick={async () => {
-              const res = await getRecepie({
-                input: "I want to make a carne asada",
-              });
-              const imageUrl = await getImage({ query: res?.title ?? "" });
-              setRecipeUrl(imageUrl);
-              console.log(res);
-              setRecipe(res);
+              console.log("Unsafe");
+              mut();
             }}
           >
-            Gen Recipe
+            Unsafe
+          </Button> */}
+
+          {/* <Button
+            onClick={async () => {
+              console.log("Unsafe");
+              mut2({ prompt: "I want to make a carne asada" });
+            }}
+          >
+            carnita
+          </Button> */}
+          <Button
+            onClick={async () => {
+              setRecepieLoading(true);
+              const res = await createRecipeMut({ prompt: prompt });
+              if (!res) {
+                return;
+              }
+              if (!res.image_url) {
+                const imageUrl = await getImage({ query: res?.name ?? "" });
+                setRecipeUrl(imageUrl);
+              } else {
+                setRecipeUrl(res.image_url);
+              }
+              // const imageUrl = await getImage({ query: res?.name ?? "" });
+              setRecipe({
+                title: res?.name ?? "",
+                ingredients: res?.Ingredients?.map((ing) => {
+                  return {
+                    id: ing.id,
+                    name: ing.name,
+                    description: ing.description,
+                    image_url: ing.image_url,
+                  };
+                }),
+                instructions: res?.Instructions ?? [],
+              });
+              setRecepieLoading(false);
+            }}
+          >
+            Create Recipe
           </Button>
         </CardContent>
       </Card>
       {recipe && (
-        <Card className="">
+        <Card className="w-3/4">
           <CardHeader>
             <p className="text-xl font-bold">{recipe.title}</p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="">
             <div className="flex space-x-2">
               <div>
                 <img src={recipeUrl} alt={recipe.title} className="h-48 w-48" />
               </div>
-              <div>
+              <div className="flex flex-col">
                 <p className="text-lg font-semibold">Ingredients:</p>
-                <ul>
+                <ul className="flex max-h-72 w-full flex-col overflow-auto">
                   {recipe.ingredients.map((ingredient) => (
-                    <li key={ingredient} className="flex space-x-2">
-                      <p className="text-sm font-bold">-</p>
-                      <p>{ingredient}</p>
+                    <li key={ingredient.id} className="flex space-x-2">
+                      <Card className="flex w-full flex-col">
+                        <CardHeader>{ingredient.name}</CardHeader>
+                        <CardContent className="flex w-full">
+                          <div className="flex justify-center">
+                            <img
+                              src={ingredient.image_url}
+                              alt={ingredient.name}
+                              className="h-10 w-10 object-cover"
+                            />
+                            <p>{ingredient.description}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
                     </li>
                   ))}
                 </ul>
