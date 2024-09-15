@@ -92,7 +92,11 @@ export default function Recepies() {
           <CardContent>
             <div className="flex space-x-2">
               <div>
-                <img src={recipeUrl} alt={recipe.title} className="h-48 w-48" />
+                <img
+                  src={recipeUrl!}
+                  alt={recipe.title}
+                  className="h-48 w-48"
+                />
               </div>
               <div>
                 <p className="text-lg font-semibold">Ingredients:</p>
