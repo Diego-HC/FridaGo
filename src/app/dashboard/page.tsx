@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { set } from "zod";
 import RecipeComp from "rbrgs/app/dashboard/RecipeComp";
 import ItemComp from "rbrgs/app/dashboard/ItemComp";
+import Markdown from "react-markdown";
 
 function SelectProduct({
   onChange,
@@ -244,9 +245,9 @@ export default function Dashboard() {
                   key={index}
                   className={`${
                     message.role === "user" ? "text-right" : "text-left"
-                  }`}
+                  } rounded-md border border-gray-300 p-2`}
                 >
-                  {message.content}
+                  <Markdown>{message.content}</Markdown>
                 </div>
               ))}
             </div>
