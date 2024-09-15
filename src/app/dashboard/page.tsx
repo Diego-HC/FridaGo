@@ -92,7 +92,7 @@ export default function Dashboard() {
                         //     ),
                         //   },
                         // },
-                        `/navigator?destination=${product.item.id}&imageUrl=${encodeURIComponent(product.item.image_url)}`,
+                        `/navigator?destination=${product.item.name}&imageUrl=${encodeURIComponent(product.item.image_url)}`,
                       );
                     }}
                   >

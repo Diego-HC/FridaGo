@@ -174,7 +174,16 @@ function NavigatorInner() {
       const bestQueue = getBestQueue();
       setBestQueue(bestQueue);
     } else if (dest != null) {
-      setCurrentDestination(destinations.findIndex((d) => d.name === dest));
+      console.log(dest);
+      const index = destinations.findIndex((d) => d.name === dest);
+      if (index === -1) {
+        destinations.push({
+          name: dest,
+          latitude: 25.6487015,
+          longitude: -100.2898314,
+        });
+      }
+      setCurrentDestination(destinations.length - 1);
     }
 
     const imageUrl = searchParams.get("imageUrl");
