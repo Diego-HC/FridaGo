@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 
-type Orientation = Partial<{
+type Orientation = {
   alpha: number;
   beta: number;
   gamma: number;
-}>;
+};
 
 // Set field of view limits (in degrees)
 const horizontalFOV = 30; // Horizontal field of view in degrees
-const verticalFOV = 40; // Vertical field of view in degrees
+const verticalFOV = 50; // Vertical field of view in degrees
 
 let a = 0;
 
@@ -111,8 +111,8 @@ function getObjectPosition(beta: number, gamma: number) {
     (beta / maxTilt) * (screenHeight / 2) + screenHeight / 2;
 
   return {
-    x: horizontalPosition,
-    y: verticalPosition,
+    x: horizontalPosition * 0.7,
+    y: verticalPosition * 0.3,
   };
 }
 
@@ -213,28 +213,26 @@ export default function Camera() {
 
     const isVisible = isObjectVisible(
       newBearing,
-      orientation.alpha ?? 0,
-      orientation.beta ?? 0,
+      orientation.alpha,
+      orientation.beta,
     );
     setVisible(isVisible);
 
-    const newPosition = getObjectPosition(
-      orientation.beta ?? 0,
-      orientation.gamma ?? 0,
-    );
+    const newPosition = getObjectPosition(orientation.beta, orientation.gamma);
     setPosition(newPosition);
   }, [coords, orientation]);
 
   const arrowStyle = {
-    transform: `rotate(${(orientation.alpha ?? 0) - bearing}deg)`,
+    transform: `rotate(${orientation.alpha - bearing}deg)`,
   };
-  const objectStyle = {
-    transform: `scale(${scale})`,
+  const objectContainerStyle = {
     display: visible ? "block" : "none",
     left: `${position.x}px`,
     top: `${position.y}px`,
   };
-
+  const objectStyle = {
+    transform: `scale(${scale})`,
+  };
   return (
     <div>
       <video
@@ -264,16 +262,15 @@ export default function Camera() {
       <div
         style={{
           position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
+          ...objectContainerStyle,
+          transform: "translate(50%, -70%)",
         }}
       >
         <div
           style={{
             ...objectStyle,
-            width: "100px",
-            height: "100px",
+            width: "50px",
+            height: "50px",
             backgroundColor: "red",
             borderRadius: "50%",
           }}
@@ -286,13 +283,16 @@ export default function Camera() {
       >
         {JSON.stringify(objectStyle)}
       </h1>
+      <h1
+        style={{ textAlign: "center", marginTop: "20px" }}
+        className="break-words"
+      >
+        {JSON.stringify(objectContainerStyle)}
+      </h1>
+      <h1 style={{ textAlign: "center", marginTop: "20px" }}>
+        b: {orientation.beta.toFixed(2)}
+      </h1>
       {/* <h1 style={{ textAlign: "center", marginTop: "20px" }}>
-        visible: {visible ? "true" : "false"}
-      </h1>
-      <h1 style={{ textAlign: "center", marginTop: "20px" }}>
-        position: {position.x.toFixed(2)}, {position.y.toFixed(2)}
-      </h1>
-      <h1 style={{ textAlign: "center", marginTop: "20px" }}>
         horizontalVisibl: {a.toFixed(2)}, beta: {orientation.beta?.toFixed(2)}
       </h1> */}
     </div>
