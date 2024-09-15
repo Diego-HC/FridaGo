@@ -20,6 +20,7 @@ import {
   SelectLabel,
 } from "r/components/ui/select";
 import { SelectTrigger, SelectValue } from "@radix-ui/react-select";
+import { useRouter } from "next/navigation";
 
 function SelectProduct({
   onChange,
@@ -58,6 +59,7 @@ function SelectProduct({
 }
 
 export default function Dashboard() {
+  const router = useRouter();
   const { data, isLoading } = api.products.getProducts.useQuery();
   const { data: lista, isLoading: listLoading } =
     api.lists.getUsersLists.useQuery();
@@ -91,6 +93,20 @@ export default function Dashboard() {
                   <Card
                     key={product.id}
                     className="flex items-center p-4 align-middle"
+                    onClick={() => {
+                      void router.push(
+                        // {
+                        //   pathname: "/navigator",
+                        //   query: {
+                        //     destination: product.item.id,
+                        //     imageUrl: encodeURIComponent(
+                        //       product.item.image_url,
+                        //     ),
+                        //   },
+                        // },
+                        `/navigator?destination=${product.item.name}&imageUrl=${encodeURIComponent(product.item.image_url)}`,
+                      );
+                    }}
                   >
                     <img
                       src={product.item.image_url}

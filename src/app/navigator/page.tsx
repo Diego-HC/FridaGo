@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "r/components/ui/card";
 import {
   calculateBearing,
   calculateDistance,
+  getBestQueue,
   getObjectPosition,
   getObjectScale,
   isObjectVisible,
 } from "./utils";
+import { useSearchParams } from "next/navigation";
+import { Button } from "r/components/ui/button";
+import { ShoppingCartIcon } from "lucide-react";
 
 type Orientation = {
   alpha: number;
@@ -17,24 +21,66 @@ type Orientation = {
 };
 
 const destinationCoords = {
-  latitude: 25.648325,
-  longitude: -100.284891,
+  latitude: 25.6487015,
+  longitude: -100.2898314,
   // latitude: 25.647943,
   // longitude: -100.218141,
 };
 
 const destinations = [
   {
+    name: "CocaCola",
+    latitude: 25.6487015,
+    longitude: -100.2898314,
+  },
+  {
+    name: "Pepsi",
+    latitude: 25.6487135,
+    longitude: -100.2898274,
+  },
+  {
     name: "Manzana",
     latitude: 25.648325,
     longitude: -100.284891,
   },
   {
-    name: "Carne asada",
+    name: "Carne-asada",
     latitude: 25.647943,
     longitude: -100.218141,
   },
 ];
+
+const queues = [
+  {
+    id: 1,
+    latitude: 25.6487115,
+    longitude: -100.2898174,
+  },
+  {
+    id: 2,
+    latitude: 25.6487135,
+    longitude: -100.2898274,
+  },
+  {
+    id: 3,
+    latitude: 25.648325,
+    longitude: -100.284891,
+  },
+];
+
+function getCoords({ product, queue }: { product?: number; queue?: number }): {
+  latitude: number;
+  longitude: number;
+} {
+  if (product != null && destinations[product]) {
+    return destinations[product];
+  }
+  if (queue != null && queues[queue]) {
+    return queues[queue];
+  }
+
+  return destinationCoords;
+}
 
 async function getMedia() {
   const constraints = {
@@ -76,8 +122,13 @@ function getLocation(
   );
 }
 
-export default function Navigator() {
-  const [currentDestination, setCurrentDestination] = useState(0);
+function NavigatorInner() {
+  const searchParams = useSearchParams();
+
+  const [currentDestination, setCurrentDestination] = useState<
+    number | undefined
+  >();
+  const [bestQueue, setBestQueue] = useState<number | undefined>();
 
   const [coords, setCoords] = useState<GeolocationCoordinates | null>(null);
   const [bearing, setBearing] = useState(0);
@@ -91,6 +142,7 @@ export default function Navigator() {
   const [scale, setScale] = useState(1);
   const [visible, setVisible] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [imgSource, setImgSource] = useState("");
 
   useEffect(() => {
     void getMedia();
@@ -115,9 +167,44 @@ export default function Navigator() {
   }, []);
 
   useEffect(() => {
-    if (!coords) {
+    searchParams.forEach((value, key) => {
+      console.log(key, value);
+    });
+
+    const dest = searchParams.get("destination");
+    if (dest === "queue") {
+      // const bestQueue = getBestQueue();
+      // setBestQueue(bestQueue);
+    } else if (dest != null) {
+      console.log(dest);
+      const index = destinations.findIndex((d) => d.name === dest);
+      if (index === -1) {
+        destinations.push({
+          name: dest,
+          latitude: 25.6487015,
+          longitude: -100.2898314,
+        });
+      }
+      setCurrentDestination(destinations.length - 1);
+    }
+
+    const imageUrl = searchParams.get("imageUrl");
+    if (imageUrl) {
+      setImgSource(decodeURIComponent(imageUrl));
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const destinationCoords = getCoords({
+      product: currentDestination,
+      queue: bestQueue,
+    });
+
+    if (!coords || !destinationCoords) {
       return;
     }
+
+    console.log(coords);
 
     const newBearing = calculateBearing(
       coords.latitude,
@@ -134,6 +221,19 @@ export default function Navigator() {
       destinationCoords.longitude,
     );
     setDistance(distance);
+
+    // if (distance < 2) {
+    //   setCurrentDestination((prev) => {
+    //     if (prev === destinations.length - 1) {
+    //       const bestQueue = getBestQueue();
+    //       setBestQueue(bestQueue);
+
+    //       return null;
+    //     }
+    //     return prev != null ? prev + 1 : prev;
+    //   });
+    // }
+
     setScale(getObjectScale(distance));
 
     const isVisible = isObjectVisible(
@@ -145,7 +245,22 @@ export default function Navigator() {
 
     const newPosition = getObjectPosition(orientation.beta, orientation.gamma);
     setPosition(newPosition);
-  }, [coords, orientation]);
+  }, [bestQueue, coords, currentDestination, orientation]);
+
+  const handleGetQueue = () => {
+    console.log("go to line");
+    getBestQueue()
+      .then((bestQueue) => {
+        setBestQueue(bestQueue);
+        setCurrentDestination(undefined);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+    // const bestQueue = await getBestQueue();
+    // setBestQueue(bestQueue);
+    // setCurrentDestination(undefined);
+  };
 
   const arrowStyle = {
     transform: `rotate(${orientation.alpha - bearing}deg)`,
@@ -159,18 +274,37 @@ export default function Navigator() {
     transform: `scale(${scale})`,
   };
 
+  let text = "";
+
+  if (bestQueue) {
+    text = `queue ${bestQueue}`;
+  } else if (currentDestination != null) {
+    text = `${destinations[currentDestination]?.name}`;
+  }
+
   return (
     <div>
-      <Card className="absolute left-4 top-2 w-11/12 bg-blue-950 bg-opacity-70 text-white">
-        <CardHeader>
-          <CardTitle className="text-2xl opacity-100">
-            Going to {destinations[currentDestination]?.name}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-lg opacity-100">
-          {distance.toFixed(1)}m
-        </CardContent>
-      </Card>
+      <div className="absolute top-2 flex w-screen justify-center">
+        <Card className="w-11/12 bg-blue-950 bg-opacity-70 text-white">
+          <CardHeader>
+            <CardTitle className="text-2xl opacity-100">
+              Going to {text}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-lg opacity-100">
+            {distance.toFixed(1)}m
+          </CardContent>
+        </Card>
+      </div>
+      <Button
+        variant="outline"
+        size="icon"
+        className="absolute right-3 top-1/4 z-10"
+        onClick={handleGetQueue}
+      >
+        <ShoppingCartIcon className="h-4 w-4" />
+      </Button>
+
       <video autoPlay playsInline style={{ width: "100%", height: "100%" }} />
       <div
         style={{
@@ -198,25 +332,34 @@ export default function Navigator() {
           transform: "translate(50%, -20vh)",
         }}
       >
-        <div
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={imgSource}
+          alt="Product"
           style={{
             ...objectStyle,
             width: "50px",
             height: "50px",
-            backgroundColor: "red",
-            borderRadius: "50%",
           }}
         />
       </div>
 
-      <div className="-translate-y-6 rounded-t-3xl bg-[#0278d3] px-4 py-6 text-white">
-        <div className="flex w-screen flex-col justify-items-center">
+      <div className="my-auto h-auto -translate-y-6 rounded-t-3xl bg-[#0278d3] px-4 py-6 text-white">
+        <div className="flex flex-col justify-items-center gap-0">
           <h1 className="text-2xl">
-            Next product: {destinations[currentDestination + 1]?.name}
+            {bestQueue ? "Queue" : "Next product"}: {text}
           </h1>
           <p>ETA: {Math.ceil(distance / 100)}min</p>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Navigator() {
+  return (
+    <Suspense>
+      <NavigatorInner />
+    </Suspense>
   );
 }
