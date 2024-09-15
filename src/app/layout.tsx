@@ -40,15 +40,6 @@ export default async function RootLayout({
             </li>
             <li>
               <Link
-                href="/dashboard"
-                className="flex flex-col items-center text-black hover:text-blue-500"
-              >
-                <UserIcon className="h-6 w-6" />
-                <span>Chat</span>
-              </Link>
-            </li>
-            <li>
-              <Link
                 href="/list"
                 className="flex flex-col items-center text-black hover:text-blue-500"
               >
