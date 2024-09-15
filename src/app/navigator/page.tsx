@@ -11,6 +11,8 @@ import {
   isObjectVisible,
 } from "./utils";
 import { useSearchParams } from "next/navigation";
+import { Button } from "r/components/ui/button";
+import { ShoppingCartIcon } from "lucide-react";
 
 type Orientation = {
   alpha: number;
@@ -279,6 +281,20 @@ function NavigatorInner() {
           </CardContent>
         </Card>
       </div>
+      <Button
+        variant="outline"
+        size="icon"
+        className="absolute right-3 top-1/4 z-10"
+        onClick={() => {
+          console.log("go to line");
+          const bestQueue = getBestQueue();
+          setBestQueue(bestQueue);
+          setCurrentDestination(undefined);
+        }}
+      >
+        <ShoppingCartIcon className="h-4 w-4" />
+      </Button>
+
       <video autoPlay playsInline style={{ width: "100%", height: "100%" }} />
       <div
         style={{
@@ -306,15 +322,7 @@ function NavigatorInner() {
           transform: "translate(50%, -20vh)",
         }}
       >
-        {/* <div
-          style={{
-            ...objectStyle,
-            width: "50px",
-            height: "50px",
-            backgroundColor: "red",
-            borderRadius: "50%",
-          }}
-        /> */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imgSource}
           alt="Product"
