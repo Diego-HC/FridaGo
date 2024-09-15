@@ -168,9 +168,10 @@ export default function Dashboard() {
                     <p>{product.quantity}</p>
                     <Button
                       className="bg-white p-1"
-                      onClick={() =>
-                        handleDeleteItem(product.item.name, product.quantity)
-                      }
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteItem(product.item.name, product.quantity);
+                      }}
                     >
                       <TrashIcon className="h-6 w-6 text-black" />
                     </Button>
