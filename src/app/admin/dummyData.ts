@@ -4,7 +4,7 @@ export type Pasillo = {
     area: string;
     cantidad: string;
   }[];
-  fecha: string | Date;
+  fecha: string;
 };
 
 export function getRandomInt(min: number, max: number): number {
@@ -156,7 +156,7 @@ const dummyDataPasillo: Pasillo[] = [
 
 const transformedDataPasillo = dummyDataPasillo.reduce(
   (acc, pasillo) => {
-    const fecha = pasillo.fecha;
+    const fecha = pasillo.fecha.toString();
     if (!acc[fecha]) {
       acc[fecha] = { fecha };
     }
