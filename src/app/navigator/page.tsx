@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "r/components/ui/card";
 import {
   calculateBearing,
@@ -120,7 +120,7 @@ function getLocation(
   );
 }
 
-export default function Navigator() {
+function NavigatorInner() {
   const searchParams = useSearchParams();
 
   const [currentDestination, setCurrentDestination] = useState<
@@ -313,5 +313,13 @@ export default function Navigator() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Navigator() {
+  return (
+    <Suspense>
+      <NavigatorInner />
+    </Suspense>
   );
 }
