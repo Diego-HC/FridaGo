@@ -98,7 +98,7 @@ export default function Recepies() {
   const utils = api.useUtils();
 
   return (
-    <div className="bg-slate-50 h-screen">
+    <div className="bg-slate-50 ">
       <h2 className=" ml-12 text-3xl font-semibold text-gray-700">
         Admin Dashboard
       </h2>

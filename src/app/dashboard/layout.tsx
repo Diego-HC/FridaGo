@@ -12,7 +12,7 @@ export default function RootLayout({
         {/* <h3 className="text-3xl">FridaGo</h3> */}
       </div>
       {/* <div className="flex h-16 w-screen" /> */}
-      <div className="h-screen">{children}</div>
+      <div className="bg-slate-50">{children}</div>
     </div>
   );
 }
