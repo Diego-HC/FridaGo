@@ -41,4 +41,17 @@ export const listsRouter = createTRPCRouter({
         },
       });
     }),
+  updateListing: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        quantity: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.userList.update({
+        where: { id: input.id, userId: ctx.session.user.id },
+        data: { quantity: input.quantity },
+      });
+    }),
 });
