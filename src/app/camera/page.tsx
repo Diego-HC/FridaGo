@@ -12,8 +12,6 @@ type Orientation = Partial<{
 const horizontalFOV = 30; // Horizontal field of view in degrees
 const verticalFOV = 40; // Vertical field of view in degrees
 
-let a = 0;
-
 const destinationCoords = {
   latitude: 25.648325,
   longitude: -100.284891,
@@ -87,8 +85,6 @@ function isObjectVisible(bearing: number, alpha: number, beta: number) {
   // Horizontal visibility (left-to-right)
   const horizontalVisible =
     absAngle < horizontalFOV / 2 || absAngle > 360 - horizontalFOV / 2;
-
-  a = Math.abs((alpha - bearing + 360) % 360);
 
   // Vertical visibility (up-and-down)
   const verticalVisible =
@@ -183,7 +179,29 @@ export default function Camera() {
         gamma: event.gamma,
       });
     };
-    window.addEventListener("deviceorientation", handleDeviceOrientation);
+
+    // @ts-expect-error ola
+    if (typeof DeviceOrientationEvent.requestPermission === "function") {
+      /* eslint-disable */
+      // @ts-expect-error Request permission for iOS 13+ devices
+      DeviceOrientationEvent.requestPermission()
+        // @ts-expect-error Handle iOS 13+ devices
+        .then(function (permissionState) {
+          if (permissionState === "granted") {
+            window.addEventListener(
+              "deviceorientation",
+              handleDeviceOrientation,
+            );
+          } else {
+            console.log("Permission denied");
+          }
+        })
+        .catch(console.error);
+      /* eslint-enable */
+    } else {
+      // Non-iOS devices or older versions
+      window.addEventListener("deviceorientation", handleDeviceOrientation);
+    }
 
     return () => {
       window.removeEventListener("deviceorientation", handleDeviceOrientation);
