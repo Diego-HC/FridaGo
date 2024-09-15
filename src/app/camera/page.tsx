@@ -115,7 +115,7 @@ export default function Camera() {
   }, [coords]);
 
   const arrowStyle = {
-    transform: `rotate(${bearing - (orientation.alpha ?? 0)}deg)`,
+    transform: `rotate(${bearing - (orientation.alpha ?? 0) + (orientation.beta ?? 0) + (orientation.gamma ?? 0)}deg)`,
   };
 
   return (
