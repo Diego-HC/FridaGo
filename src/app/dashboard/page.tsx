@@ -141,7 +141,7 @@ export default function Dashboard() {
       </h2>
 
       <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center gap-8 bg-slate-50 align-middle">
-        <Card className="h-4/5 w-2/3">
+        <Card className="h-4/5 w-3/4">
           <CardHeader>
             My list
             <div className="my-4 flex w-full">
