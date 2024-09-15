@@ -20,7 +20,7 @@ import {
   SelectLabel,
 } from "r/components/ui/select";
 import { SelectTrigger, SelectValue } from "@radix-ui/react-select";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 function SelectProduct({
   onChange,
@@ -83,16 +83,16 @@ export default function Dashboard() {
                     className="flex items-center p-4 align-middle"
                     onClick={() => {
                       void router.push(
-                        {
-                          pathname: "/navigator",
-                          query: {
-                            destination: product.item.id,
-                            imageUrl: encodeURIComponent(
-                              product.item.image_url,
-                            ),
-                          },
-                        },
-                        // `/navigator?destination=${product.item.id}`,
+                        // {
+                        //   pathname: "/navigator",
+                        //   query: {
+                        //     destination: product.item.id,
+                        //     imageUrl: encodeURIComponent(
+                        //       product.item.image_url,
+                        //     ),
+                        //   },
+                        // },
+                        `/navigator?destination=${product.item.id}&imageUrl=${encodeURIComponent(product.item.image_url)}`,
                       );
                     }}
                   >
