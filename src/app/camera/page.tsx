@@ -12,8 +12,6 @@ type Orientation = {
 const horizontalFOV = 30; // Horizontal field of view in degrees
 const verticalFOV = 50; // Vertical field of view in degrees
 
-let a = 0;
-
 const destinationCoords = {
   latitude: 25.648325,
   longitude: -100.284891,
@@ -88,11 +86,8 @@ function isObjectVisible(bearing: number, alpha: number, beta: number) {
   const horizontalVisible =
     absAngle < horizontalFOV / 2 || absAngle > 360 - horizontalFOV / 2;
 
-  a = Math.abs((alpha - bearing + 360) % 360);
-
   // Vertical visibility (up-and-down)
-  const verticalVisible =
-    beta - 90 < verticalFOV / 2 && beta - 90 > -verticalFOV / 2;
+  const verticalVisible = beta - 90 < verticalFOV && beta - 90 > -verticalFOV;
 
   return horizontalVisible && verticalVisible;
 }
@@ -112,7 +107,7 @@ function getObjectPosition(beta: number, gamma: number) {
 
   return {
     x: horizontalPosition * 0.7,
-    y: verticalPosition * 0.3,
+    y: verticalPosition * 0.4,
   };
 }
 
@@ -235,11 +230,7 @@ export default function Camera() {
   };
   return (
     <div>
-      <video
-        autoPlay
-        playsInline
-        style={{ width: "100%", height: "100%" }}
-      ></video>
+      <video autoPlay playsInline style={{ width: "100%", height: "100%" }} />
       <div
         style={{
           position: "absolute",
@@ -263,7 +254,7 @@ export default function Camera() {
         style={{
           position: "absolute",
           ...objectContainerStyle,
-          transform: "translate(50%, -70%)",
+          transform: "translate(50%, -20vh)",
         }}
       >
         <div
