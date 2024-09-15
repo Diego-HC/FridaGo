@@ -167,6 +167,61 @@ export const recipesRouter = createTRPCRouter({
       });
       return res;
     }),
+  recommendBestIngredients: protectedProcedure
+    .input(
+      z.object({
+        ingredients: z.array(z.string()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const recommendedIngredients = await Promise.all(
+        input.ingredients.map(async (ingredient) => {
+          const embedding = await getEmbedding(ingredient);
+          if (!embedding) {
+            return null;
+          }
+
+          if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+            return null;
+          }
+
+          const res = (await client.rpc("similarity_search_inventory", {
+            embedding,
+            match_count: 5,
+            min_similarity: 0.4,
+          })) as {
+            data: {
+              similarity: number;
+              name: string;
+              description: string;
+              location: string;
+              image_url: string;
+            }[];
+          };
+
+          if (res.data.length === 0 || !res.data[0]) {
+            return null;
+          }
+
+          return res.data;
+        }),
+      );
+
+      const filteredRecommendations = recommendedIngredients
+        .flat()
+        .filter((ingredient) => ingredient !== null);
+
+      const newRecommendations = filteredRecommendations.filter(
+        (recommended) => !input.ingredients.includes(recommended.name),
+      );
+
+      const top3Ingredients = newRecommendations
+        .sort((a, b) => {
+          return a.similarity - b.similarity;
+        })
+        .slice(0, 3);
+      return top3Ingredients;
+    }),
   findRecepieByPrompt: protectedProcedure
     .input(
       z.object({
