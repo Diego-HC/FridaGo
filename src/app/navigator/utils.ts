@@ -93,3 +93,7 @@ export function getObjectPosition(beta: number, gamma: number) {
     y: verticalPosition * 0.4,
   };
 }
+
+export function getBestQueue() {
+  return 1;
+}
