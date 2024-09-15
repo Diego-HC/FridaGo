@@ -8,10 +8,113 @@ type Orientation = Partial<{
   gamma: number;
 }>;
 
+// Set field of view limits (in degrees)
+const horizontalFOV = 30; // Horizontal field of view in degrees
+const verticalFOV = 40; // Vertical field of view in degrees
+
+let a = 0;
+
 const destinationCoords = {
-  latitude: 37.7749,
-  longitude: -122.4194,
+  latitude: 25.648325,
+  longitude: -100.284891,
+  // latitude: 25.647943,
+  // longitude: -100.218141,
 };
+
+function calculateBearing(
+  userLat: number,
+  userLng: number,
+  targetLat: number,
+  targetLng: number,
+) {
+  const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+  const toDegrees = (radians: number) => (radians * 180) / Math.PI;
+
+  const deltaLng = toRadians(targetLng - userLng);
+  const userLatRad = toRadians(userLat);
+  const targetLatRad = toRadians(targetLat);
+
+  const y = Math.sin(deltaLng) * Math.cos(targetLatRad);
+  const x =
+    Math.cos(userLatRad) * Math.sin(targetLatRad) -
+    Math.sin(userLatRad) * Math.cos(targetLatRad) * Math.cos(deltaLng);
+
+  let bearing = toDegrees(Math.atan2(y, x));
+  bearing = (bearing + 360) % 360; // Normalize the bearing
+
+  return bearing;
+}
+
+function calculateDistance(
+  userLat: number,
+  userLng: number,
+  targetLat: number,
+  targetLng: number,
+): number {
+  const R = 6371e3; // Earth radius in meters
+  const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+
+  const lat1 = toRadians(userLat);
+  const lat2 = toRadians(targetLat);
+  const deltaLat = toRadians(targetLat - userLat);
+  const deltaLng = toRadians(targetLng - userLng);
+
+  const a =
+    Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+    Math.cos(lat1) *
+      Math.cos(lat2) *
+      Math.sin(deltaLng / 2) *
+      Math.sin(deltaLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // Distance in meters
+}
+
+function getObjectScale(distance: number) {
+  const minScale = 0.1; // Minimum scale factor for far distances
+  const maxScale = 2; // Maximum scale factor for near distances
+  const maxDistance = 1000; // Max distance in meters for scaling effect
+
+  let scale =
+    ((maxDistance - distance) / maxDistance) * (maxScale - minScale) + minScale;
+  scale = Math.max(minScale, Math.min(maxScale, scale)); // Clamp the scale between min and max
+
+  return scale;
+}
+
+function isObjectVisible(bearing: number, alpha: number, beta: number) {
+  const absAngle = Math.abs((alpha - bearing + 360) % 360);
+  // Horizontal visibility (left-to-right)
+  const horizontalVisible =
+    absAngle < horizontalFOV / 2 || absAngle > 360 - horizontalFOV / 2;
+
+  a = Math.abs((alpha - bearing + 360) % 360);
+
+  // Vertical visibility (up-and-down)
+  const verticalVisible =
+    beta - 90 < verticalFOV / 2 && beta - 90 > -verticalFOV / 2;
+
+  return horizontalVisible && verticalVisible;
+}
+
+function getObjectPosition(beta: number, gamma: number) {
+  const maxTilt = 45; // Max tilt considered for positioning
+  const screenWidth = window.innerWidth;
+  const screenHeight = window.innerHeight;
+
+  // Horizontal position based on gamma (side-to-side tilt)
+  const horizontalPosition =
+    (gamma / maxTilt) * (screenWidth / 2) + screenWidth / 2;
+
+  // Vertical position based on beta (front-to-back tilt)
+  const verticalPosition =
+    (beta / maxTilt) * (screenHeight / 2) + screenHeight / 2;
+
+  return {
+    x: horizontalPosition,
+    y: verticalPosition,
+  };
+}
 
 async function getMedia() {
   const constraints = {
@@ -45,35 +148,12 @@ function getLocation(
   }
 
   navigator.geolocation.watchPosition(
-    (position) => {
-      onChangeLocation(position.coords);
-    },
-    (err) => {
-      console.error(err);
-    },
+    (position) => onChangeLocation(position.coords),
+    (err) => console.error(err),
     {
       enableHighAccuracy: true,
     },
   );
-}
-
-function calculateBearing(
-  start: GeolocationCoordinates,
-  end: { latitude: number; longitude: number },
-) {
-  const startLat = (start.latitude * Math.PI) / 180;
-  const startLng = (start.longitude * Math.PI) / 180;
-  const endLat = (end.latitude * Math.PI) / 180;
-  const endLng = (end.longitude * Math.PI) / 180;
-
-  const dLng = endLng - startLng;
-  const x = Math.sin(dLng) * Math.cos(endLat);
-  const y =
-    Math.cos(startLat) * Math.sin(endLat) -
-    Math.sin(startLat) * Math.cos(endLat) * Math.cos(dLng);
-  const bearing = (Math.atan2(x, y) * 180) / Math.PI;
-
-  return (bearing + 360) % 360;
 }
 
 export default function Camera() {
@@ -84,6 +164,9 @@ export default function Camera() {
     gamma: 0,
   });
   const [bearing, setBearing] = useState(0);
+  const [scale, setScale] = useState(1);
+  const [visible, setVisible] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     void getMedia();
@@ -108,17 +191,48 @@ export default function Camera() {
   }, []);
 
   useEffect(() => {
-    if (coords) {
-      const newBearing = calculateBearing(coords, destinationCoords);
-      setBearing(newBearing);
+    if (!coords) {
+      return;
     }
-  }, [coords]);
 
-  // const arrowStyle = {
-  //   transform: `rotate(${bearing - (orientation.alpha ?? 0) + (orientation.beta ?? 0) + (orientation.gamma ?? 0)}deg)`,
-  // };
+    const newBearing = calculateBearing(
+      coords.latitude,
+      coords.longitude,
+      destinationCoords.latitude,
+      destinationCoords.longitude,
+    );
+    setBearing(newBearing);
+
+    const distance = calculateDistance(
+      coords.latitude,
+      coords.longitude,
+      destinationCoords.latitude,
+      destinationCoords.longitude,
+    );
+    setScale(getObjectScale(distance));
+
+    const isVisible = isObjectVisible(
+      newBearing,
+      orientation.alpha ?? 0,
+      orientation.beta ?? 0,
+    );
+    setVisible(isVisible);
+
+    const newPosition = getObjectPosition(
+      orientation.beta ?? 0,
+      orientation.gamma ?? 0,
+    );
+    setPosition(newPosition);
+  }, [coords, orientation]);
+
   const arrowStyle = {
-    transform: `rotate(${bearing - (orientation.alpha ?? 0) + 180}deg)`,
+    transform: `rotate(${(orientation.alpha ?? 0) - bearing}deg)`,
+  };
+  const objectStyle = {
+    transform: `scale(${scale})`,
+    display: visible ? "block" : "none",
+    left: `${position.x}px`,
+    top: `${position.y}px`,
   };
 
   return (
@@ -131,9 +245,9 @@ export default function Camera() {
       <div
         style={{
           position: "absolute",
-          top: "50%",
+          top: "60%",
           left: "50%",
-          transform: "translate(-50%, -50%)",
+          transform: "translate(-50%)",
         }}
       >
         <div
@@ -142,137 +256,45 @@ export default function Camera() {
             width: "50px",
             height: "50px",
           }}
-          className="flex items-center justify-center rounded-full bg-white text-2xl font-bold"
+          className="flex items-center justify-center rounded-full bg-slate-300 text-2xl font-bold"
         >
           ↑
         </div>
       </div>
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+        }}
+      >
+        <div
+          style={{
+            ...objectStyle,
+            width: "100px",
+            height: "100px",
+            backgroundColor: "red",
+            borderRadius: "50%",
+          }}
+        />
+      </div>
+
+      <h1
+        style={{ textAlign: "center", marginTop: "20px" }}
+        className="break-words"
+      >
+        {JSON.stringify(objectStyle)}
+      </h1>
+      {/* <h1 style={{ textAlign: "center", marginTop: "20px" }}>
+        visible: {visible ? "true" : "false"}
+      </h1>
+      <h1 style={{ textAlign: "center", marginTop: "20px" }}>
+        position: {position.x.toFixed(2)}, {position.y.toFixed(2)}
+      </h1>
+      <h1 style={{ textAlign: "center", marginTop: "20px" }}>
+        horizontalVisibl: {a.toFixed(2)}, beta: {orientation.beta?.toFixed(2)}
+      </h1> */}
     </div>
   );
 }
-
-// "use client";
-
-// import Image from "next/image";
-// import { useEffect, useState } from "react";
-
-// type Orientation = Partial<{
-//   alpha: number;
-//   beta: number;
-//   gamma: number;
-// }>;
-
-// const destinationCoords = {
-//   latitude: 37.7749,
-//   longitude: -122.4194,
-// };
-
-// async function getMedia() {
-//   const constraints = {
-//     video: {
-//       facingMode: "environment",
-//     },
-//   };
-
-//   try {
-//     const stream = await navigator.mediaDevices.getUserMedia(constraints);
-//     /* use the stream */
-
-//     const video = document.querySelector("video");
-
-//     if (!video) {
-//       return;
-//     }
-
-//     video.srcObject = stream;
-//     video.onloadedmetadata = () => {
-//       void video.play();
-//     };
-//   } catch (err) {
-//     console.error(err);
-//   }
-// }
-
-// function getLocation(
-//   onChangeLocation: (coords: GeolocationCoordinates) => void,
-// ) {
-//   if (!navigator.geolocation) {
-//     return;
-//   }
-
-//   const onSuccess: PositionCallback = (res) => {
-//     console.log(res);
-
-//     onChangeLocation(res.coords);
-//   };
-//   const onError: PositionErrorCallback = (err) => {
-//     console.log(err);
-//   };
-
-//   return navigator.geolocation.watchPosition(onSuccess, onError, {
-//     enableHighAccuracy: true,
-//   });
-// }
-
-// export default function Camera() {
-//   const [orientation, setOrientation] = useState<Orientation>();
-//   const [coords, setCoords] = useState<GeolocationCoordinates>();
-
-//   useEffect(() => {
-//     void getMedia();
-
-//     const handleOrientationEvent = (event: DeviceOrientationEvent): void => {
-//       setOrientation({
-//         alpha: event.alpha ?? 0,
-//         beta: event.beta ?? 0,
-//         gamma: event.gamma ?? 0,
-//       });
-//     };
-//     window.addEventListener("deviceorientation", handleOrientationEvent);
-
-//     const watchId = getLocation(setCoords);
-
-//     return () => {
-//       window.removeEventListener("deviceorientation", handleOrientationEvent);
-
-//       if (watchId) {
-//         navigator.geolocation.clearWatch(watchId);
-//       }
-//     };
-//   }, []);
-
-//   return (
-//     <div style={{ position: "relative", width: "100vw", height: "80vh" }}>
-//       <video
-//         style={{
-//           position: "absolute",
-//           top: 0,
-//           left: 0,
-//           width: "100%",
-//           height: "100%",
-//           zIndex: 1,
-//         }}
-//       />
-//       <div
-//         style={{
-//           position: "absolute",
-//           top: 0,
-//           left: 0,
-//           width: "100%",
-//           height: "100%",
-//           zIndex: 2,
-//           pointerEvents: "none",
-//         }}
-//       >
-//         {/* Overlay content goes here */}
-//         <Image src="/arrow.png" alt="Arrow" width={100} height={100} />
-//         <h1 style={{ color: "white", textAlign: "center", marginTop: "20px" }}>
-//           {coords?.latitude}, {coords?.longitude}
-//         </h1>
-//         <h1 style={{ color: "white", textAlign: "center", marginTop: "20px" }}>
-//           {orientation?.alpha}, {orientation?.beta}, {orientation?.gamma}
-//         </h1>
-//       </div>
-//     </div>
-//   );
-// }
