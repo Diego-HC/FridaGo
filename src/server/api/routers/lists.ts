@@ -41,6 +41,37 @@ export const listsRouter = createTRPCRouter({
         },
       });
     }),
+  deleteItemList: protectedProcedure
+    .input(
+      z.object({
+        productName: z.string(),
+        quantity: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (input.quantity - 1 <= 0) {
+        return await ctx.db.userList.deleteMany({
+          where: {
+            userId: ctx.session.user.id,
+            inventoryName: input.productName,
+          },
+        });
+      }
+
+      const list = await ctx.db.userList.findFirst({
+        where: {
+          userId: ctx.session.user.id,
+          inventoryName: input.productName,
+        },
+      });
+
+      if (list) {
+        return await ctx.db.userList.update({
+          where: { id: list.id },
+          data: { quantity: list.quantity - 1 },
+        });
+      }
+    }),
   updateListing: protectedProcedure
     .input(
       z.object({
@@ -54,6 +85,11 @@ export const listsRouter = createTRPCRouter({
         data: { quantity: input.quantity },
       });
     }),
+  clearItemsList: protectedProcedure.mutation(async ({ ctx }) => {
+    return await ctx.db.userList.deleteMany({
+      where: { userId: ctx.session.user.id },
+    });
+  }),
   addItemsToList: protectedProcedure
     .input(
       z.object({

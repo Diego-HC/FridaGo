@@ -12,6 +12,7 @@ import { Button } from "r/components/ui/button";
 import { api } from "rbrgs/trpc/react";
 import { Skeleton } from "r/components/ui/skeleton";
 import Image from "next/image";
+import { TrashIcon } from "@heroicons/react/outline";
 import {
   Select,
   SelectContent,
@@ -68,6 +69,48 @@ export default function Dashboard() {
     api.lists.getUsersLists.useQuery();
   const { mutateAsync } = api.lists.addItemToList.useMutation();
   const utils = api.useUtils();
+  const { mutateAsync: findBestIngredientsMatch } =
+    api.recipes.recommendBestIngredients.useMutation();
+  const { mutateAsync: clearList } = api.lists.clearItemsList.useMutation();
+  const { mutateAsync: deleteItem } = api.lists.deleteItemList.useMutation();
+  const [bestIngredients, setBestIngredients] = React.useState<
+    | {
+        similarity: number;
+        name: string;
+        description: string;
+        location: string;
+        image_url: string;
+      }[]
+    | null
+  >(null);
+
+  React.useEffect(() => {
+    const fetchBestIngredients = async () => {
+      if (lista) {
+        const ingredientNames = lista.map((item) => item.item.name);
+        const recommendations = await findBestIngredientsMatch({
+          ingredients: ingredientNames,
+        });
+        setBestIngredients(recommendations);
+      }
+    };
+
+    fetchBestIngredients();
+  }, [lista, findBestIngredientsMatch]);
+
+  const handleClearList = async () => {
+    await clearList();
+    await utils.lists.getUsersLists.invalidate();
+  };
+
+  const handleDeleteItem = async (productName: string, quantity: number) => {
+    await deleteItem({
+      productName,
+      quantity,
+    });
+    await utils.lists.getUsersLists.invalidate();
+  };
+
   const { mutateAsync: refreshEmbeddings } =
     api.embeddings.processAllRecipes.useMutation();
 
@@ -94,7 +137,14 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center align-middle">
       <Card className="h-4/5 w-2/3">
-        <CardHeader>My list</CardHeader>
+        <CardHeader>
+          My list
+          <div className="my-4 flex w-full">
+            <Button onClick={handleClearList} className="ml-auto">
+              Clear list
+            </Button>
+          </div>
+        </CardHeader>
         <CardContent>
           <>
             <div className="flex w-full flex-wrap justify-evenly">
@@ -130,6 +180,15 @@ export default function Dashboard() {
 
                     <p className="mx-8 font-semibold">{product.item.name}</p>
                     <p>{product.quantity}</p>
+                    <Button
+                      className="bg-white p-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteItem(product.item.name, product.quantity);
+                      }}
+                    >
+                      <TrashIcon className="h-6 w-6 text-black" />
+                    </Button>
                   </Card>
                 ))
               )}
@@ -143,6 +202,33 @@ export default function Dashboard() {
           >
             AddEmbs
           </Button>
+        </CardContent>
+      </Card>
+      <Card className="h-4/5 w-2/3">
+        <CardHeader>Recommendations</CardHeader>
+        <CardContent>
+          <div className="flex w-full flex-wrap justify-evenly">
+            {isLoading && bestIngredients === null ? (
+              <Card>
+                <Skeleton className="h-10" />
+              </Card>
+            ) : (
+              bestIngredients?.map((product) => (
+                <Card
+                  key={product.name}
+                  className="flex items-center p-4 align-middle"
+                >
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    className="mr-4 h-12 w-12 rounded-lg object-cover"
+                  />
+                  <p className="font-semibold">{product.name} </p>
+                  <p>{product.description}</p>
+                </Card>
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
       <Card className="h-3/5 w-2/3">
