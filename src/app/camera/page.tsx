@@ -138,8 +138,8 @@ export default function Camera() {
             ...arrowStyle,
             width: "50px",
             height: "50px",
-            background: "red",
           }}
+          className="flex items-center justify-center rounded-full bg-white text-2xl font-bold"
         >
           ↑
         </div>
