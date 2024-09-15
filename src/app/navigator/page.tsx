@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "r/components/ui/card";
 import {
   calculateBearing,
   calculateDistance,
+  getBestQueue,
   getObjectPosition,
   getObjectScale,
   isObjectVisible,
 } from "./utils";
+import { useSearchParams } from "next/navigation";
 
 type Orientation = {
   alpha: number;
@@ -16,25 +18,67 @@ type Orientation = {
   gamma: number;
 };
 
-const destinationCoords = {
-  latitude: 25.648325,
-  longitude: -100.284891,
-  // latitude: 25.647943,
-  // longitude: -100.218141,
-};
+// const destinationCoords = {
+//   latitude: 25.6487015,
+//   longitude: -100.2898314,
+//   // latitude: 25.647943,
+//   // longitude: -100.218141,
+// };
 
 const destinations = [
+  {
+    name: "CocaCola",
+    latitude: 25.6487015,
+    longitude: -100.2898314,
+  },
+  {
+    name: "Pepsi",
+    latitude: 25.6487135,
+    longitude: -100.2898274,
+  },
   {
     name: "Manzana",
     latitude: 25.648325,
     longitude: -100.284891,
   },
   {
-    name: "Carne asada",
+    name: "Carne-asada",
     latitude: 25.647943,
     longitude: -100.218141,
   },
 ];
+
+const queues = [
+  {
+    id: 1,
+    latitude: 25.6487115,
+    longitude: -100.2898174,
+  },
+  {
+    id: 2,
+    latitude: 25.6487135,
+    longitude: -100.2898274,
+  },
+  {
+    id: 3,
+    latitude: 25.648325,
+    longitude: -100.284891,
+  },
+];
+
+function getCoords({ product, queue }: { product?: number; queue?: number }):
+  | {
+      latitude: number;
+      longitude: number;
+    }
+  | undefined {
+  if (product != null && destinations[product]) {
+    return destinations[product];
+  }
+  if (queue != null && queues[queue]) {
+    return queues[queue];
+  }
+}
 
 async function getMedia() {
   const constraints = {
@@ -76,8 +120,13 @@ function getLocation(
   );
 }
 
-export default function Navigator() {
-  const [currentDestination, setCurrentDestination] = useState(0);
+function NavigatorInner() {
+  const searchParams = useSearchParams();
+
+  const [currentDestination, setCurrentDestination] = useState<
+    number | undefined
+  >();
+  const [bestQueue, setBestQueue] = useState<number | undefined>();
 
   const [coords, setCoords] = useState<GeolocationCoordinates | null>(null);
   const [bearing, setBearing] = useState(0);
@@ -115,9 +164,30 @@ export default function Navigator() {
   }, []);
 
   useEffect(() => {
-    if (!coords) {
+    searchParams.forEach((value, key) => {
+      console.log(key, value);
+    });
+
+    const dest = searchParams.get("destination");
+    if (dest === "queue") {
+      const bestQueue = getBestQueue();
+      setBestQueue(bestQueue);
+    } else if (dest != null) {
+      setCurrentDestination(destinations.findIndex((d) => d.name === dest));
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const destinationCoords = getCoords({
+      product: currentDestination,
+      queue: bestQueue,
+    });
+
+    if (!coords || !destinationCoords) {
       return;
     }
+
+    console.log(coords);
 
     const newBearing = calculateBearing(
       coords.latitude,
@@ -134,6 +204,19 @@ export default function Navigator() {
       destinationCoords.longitude,
     );
     setDistance(distance);
+
+    // if (distance < 2) {
+    //   setCurrentDestination((prev) => {
+    //     if (prev === destinations.length - 1) {
+    //       const bestQueue = getBestQueue();
+    //       setBestQueue(bestQueue);
+
+    //       return null;
+    //     }
+    //     return prev != null ? prev + 1 : prev;
+    //   });
+    // }
+
     setScale(getObjectScale(distance));
 
     const isVisible = isObjectVisible(
@@ -145,7 +228,7 @@ export default function Navigator() {
 
     const newPosition = getObjectPosition(orientation.beta, orientation.gamma);
     setPosition(newPosition);
-  }, [coords, orientation]);
+  }, [bestQueue, coords, currentDestination, orientation]);
 
   const arrowStyle = {
     transform: `rotate(${orientation.alpha - bearing}deg)`,
@@ -159,18 +242,28 @@ export default function Navigator() {
     transform: `scale(${scale})`,
   };
 
+  let text = "";
+
+  if (bestQueue) {
+    text = `queue ${bestQueue}`;
+  } else if (currentDestination != null) {
+    text = `${destinations[currentDestination]?.name}`;
+  }
+
   return (
     <div>
-      <Card className="absolute left-4 top-2 w-11/12 bg-blue-950 bg-opacity-70 text-white">
-        <CardHeader>
-          <CardTitle className="text-2xl opacity-100">
-            Going to {destinations[currentDestination]?.name}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-lg opacity-100">
-          {distance.toFixed(1)}m
-        </CardContent>
-      </Card>
+      <div className="absolute top-2 flex w-screen justify-center">
+        <Card className="w-11/12 bg-blue-950 bg-opacity-70 text-white">
+          <CardHeader>
+            <CardTitle className="text-2xl opacity-100">
+              Going to {text}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-lg opacity-100">
+            {distance.toFixed(1)}m
+          </CardContent>
+        </Card>
+      </div>
       <video autoPlay playsInline style={{ width: "100%", height: "100%" }} />
       <div
         style={{
@@ -209,14 +302,24 @@ export default function Navigator() {
         />
       </div>
 
-      <div className="-translate-y-6 rounded-t-3xl bg-[#0278d3] px-4 py-6 text-white">
-        <div className="flex w-screen flex-col justify-items-center">
+      <div className="my-auto h-auto -translate-y-6 rounded-t-3xl bg-[#0278d3] px-4 py-6 text-white">
+        <div className="flex flex-col justify-items-center gap-0">
           <h1 className="text-2xl">
-            Next product: {destinations[currentDestination + 1]?.name}
+            {bestQueue ? "Queue" : "Next product"}: {text}
           </h1>
           <p>ETA: {Math.ceil(distance / 100)}min</p>
+          <p>{coords?.latitude}</p>
+          <p>{coords?.longitude}</p>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Navigator() {
+  return (
+    <Suspense>
+      <NavigatorInner />
+    </Suspense>
   );
 }
