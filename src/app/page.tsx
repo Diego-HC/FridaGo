@@ -91,6 +91,7 @@ export default async function Home() {
                   database and authentication.
                 </div>
               </Link>
+
               <Link
                 className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
                 href="https://create.t3.gg/en/introduction"
@@ -129,6 +130,12 @@ export default async function Home() {
                 </Link>
               )}
             </div>
+            <Link
+              href="/navigator"
+              className="mt-4 rounded-full bg-blue-500 px-6 py-3 text-lg font-semibold text-white transition hover:bg-blue-600"
+            >
+              Go to Camera
+            </Link>
 
             {session?.user && <LatestPost />}
           </div>
