@@ -182,7 +182,7 @@ export default function AdminDashboard() {
               Aisle View Real Time
             </h3>
             <img
-              src="https://neutral-asp-useful.ngrok-f/aisle_view"
+              src="https://neutral-asp-useful.ngrok-free.app/aisle_view"
               alt="Video Feed"
               className=""
             ></img>
@@ -194,7 +194,7 @@ export default function AdminDashboard() {
               className="flex h-40 flex-col"
               onClick={() =>
                 handleOpenView(
-                  "https://neutral-asp-useful.ngrok-f/get_heatmap",
+                  "https://neutral-asp-useful.ngrok-free.app/get_heatmap",
                   "Heatmap",
                 )
               }
@@ -203,7 +203,7 @@ export default function AdminDashboard() {
                 Heatmap
               </p>
               <img
-                src="https://neutral-asp-useful.ngrok-f/get_heatmap"
+                src="https://neutral-asp-useful.ngrok-free.app/get_heatmap"
                 alt="Video Feed"
                 className="w-48 p-2"
               ></img>
@@ -213,7 +213,7 @@ export default function AdminDashboard() {
               className="flex h-40 flex-col"
               onClick={() =>
                 handleOpenView(
-                  "https://neutral-asp-useful.ngrok-f/get_trajectories",
+                  "https://neutral-asp-useful.ngrok-free.app/get_trajectories",
                   "Trajectories",
                 )
               }
@@ -222,7 +222,7 @@ export default function AdminDashboard() {
                 Trajectories
               </p>
               <img
-                src="https://neutral-asp-useful.ngrok-f/get_trajectories"
+                src="https://neutral-asp-useful.ngrok-free.app/get_trajectories"
                 alt="Video Feed"
                 className="w-48 p-2"
               ></img>
