@@ -54,4 +54,59 @@ export const listsRouter = createTRPCRouter({
         data: { quantity: input.quantity },
       });
     }),
+  addItemsToList: protectedProcedure
+    .input(
+      z.object({
+        items: z.array(z.object({ productName: z.string() })),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const usersLists = await ctx.db.userList.findMany({
+        where: { userId: ctx.session.user.id },
+      });
+      const items = input.items;
+      const updatedLists = usersLists.map((list) => {
+        const item = items.find(
+          (item) => item.productName === list.inventoryName,
+        );
+        if (item) {
+          return {
+            ...list,
+            quantity: list.quantity + 1,
+          };
+        }
+        return list;
+      });
+      const newItems = items.filter(
+        (item) =>
+          !usersLists.find((list) => list.inventoryName === item.productName),
+      );
+      await Promise.all([
+        ctx.db.userList.createMany({
+          data: newItems.map((item) => ({
+            userId: ctx.session.user.id,
+            inventoryName: item.productName,
+            quantity: 1,
+          })),
+        }),
+        ctx.db.userList.updateMany({
+          where: {
+            AND: {
+              userId: ctx.session.user.id,
+              AND: {
+                inventoryName: {
+                  in: updatedLists.map((list) => list.inventoryName),
+                  notIn: newItems.map((item) => item.productName),
+                },
+              },
+            },
+          },
+          data: {
+            quantity: {
+              increment: 1,
+            },
+          },
+        }),
+      ]);
+    }),
 });

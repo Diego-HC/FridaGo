@@ -184,8 +184,51 @@ export const recipesRouter = createTRPCRouter({
     const recipes = await ctx.db.recepie.findMany({
       include: {
         Ingredients: true,
+        Users: {
+          where: {
+            id: { equals: ctx.session?.user.id },
+          },
+        },
       },
     });
     return recipes;
   }),
+  userLikedRecipe: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const res = await ctx.db.recepie.update({
+        where: { id: input.id },
+        data: {
+          Users: {
+            connect: {
+              id: ctx.session?.user.id,
+            },
+          },
+        },
+      });
+      return res;
+    }),
+  userUnLikedRecipe: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const res = await ctx.db.recepie.update({
+        where: { id: input.id },
+        data: {
+          Users: {
+            disconnect: {
+              id: ctx.session?.user.id,
+            },
+          },
+        },
+      });
+      return res;
+    }),
 });

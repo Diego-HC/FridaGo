@@ -4,9 +4,13 @@ import { api } from "rbrgs/trpc/react";
 import { Card, CardContent, CardHeader } from "r/components/ui/card";
 import OpenAI from "openai";
 import { zodResponseFormat } from "openai/helpers/zod";
-import { z } from "zod";
+import { set, z } from "zod";
 import { Button } from "r/components/ui/button";
 import { Input } from "r/components/ui/input";
+import { Star, ShoppingBasket, StarOff, ExternalLink } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Field, Form, Formik } from "formik";
+import { Separator } from "r/components/ui/separator";
 
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
@@ -67,6 +71,8 @@ export default function Recepies() {
       image_url: string;
     }[];
     instructions: string[];
+    image_url?: string;
+    Users?: { email: string }[];
   } | null>(null);
 
   const [recipeUrl, setRecipeUrl] = useState<string | null>(null);
@@ -81,81 +87,187 @@ export default function Recepies() {
   const { data: recepies, isLoading: isRecepiesLoading } =
     api.recipes.getRecipes.useQuery();
 
+  const { mutate: likeRecipe } = api.recipes.userLikedRecipe.useMutation();
+
+  const { mutate: dislikeRecipe } = api.recipes.userUnLikedRecipe.useMutation();
+
+  const { data: session } = useSession();
+
+  const { mutateAsync: addToCart } = api.lists.addItemsToList.useMutation();
+
+  const utils = api.useUtils();
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center p-6">
       {isRecepiesLoading && <p>Loading Recepies...</p>}
       {recepies && (
-        <div>
+        <div className="flex w-5/6 scroll-my-2 space-x-12 overflow-auto">
           {recepies.map((recepie) => (
-            <p key={recepie.id}>{recepie.name}</p>
+            <Card
+              key={recepie.id}
+              className="flex w-max flex-col items-center justify-center pt-6"
+            >
+              <CardContent className="flex flex-col items-center justify-center">
+                <img
+                  src={recepie.image_url ?? ""}
+                  alt={recepie.name}
+                  className="max-h-48 min-h-48 min-w-48 max-w-48 rounded-lg border-2 border-gray-200 object-cover shadow-md"
+                />
+                <p>{recepie.name}</p>
+                <div className="-ml-10 flex w-36 justify-between space-x-2">
+                  <Button
+                    variant={"outline"}
+                    onClick={() => {
+                      if (!session) {
+                        return;
+                      }
+                      if (recepie.Users?.length == 0) {
+                        likeRecipe({ id: recepie.id });
+                        recepie.Users?.push({
+                          email: session.user?.email as string | null,
+                          id: session.user?.id,
+                          name: session.user?.name as string | null,
+                          image: session.user?.image as string | null,
+                          emailVerified: new Date(),
+                        });
+                      } else {
+                        dislikeRecipe({ id: recepie.id });
+                        recepie.Users?.pop();
+                      }
+                    }}
+                  >
+                    {recepie.Users?.length == 0 ? (
+                      <Star className="h-6 w-6" />
+                    ) : (
+                      <StarOff className="h-6 w-6" fill="yellow" />
+                    )}
+                  </Button>
+                  <Button
+                    variant={"outline"}
+                    onClick={() => {
+                      setRecipe({
+                        title: recepie.name,
+                        ingredients: recepie.Ingredients?.map((ing) => {
+                          return {
+                            id: ing.id,
+                            name: ing.name,
+                            description: ing.description,
+                            image_url: ing.image_url,
+                          };
+                        }),
+                        instructions: recepie.Instructions ?? [],
+                      });
+                      setRecipeUrl(recepie.image_url);
+                    }}
+                  >
+                    <ExternalLink className="h-6 w-6" />
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      await addToCart({
+                        items: recepie.Ingredients?.map((ing) => {
+                          return {
+                            productName: ing.name,
+                            description: ing.description,
+                            image_url: ing.image_url,
+                          };
+                        }),
+                      });
+                      await utils.lists.getUsersLists.invalidate();
+                    }}
+                  >
+                    <ShoppingBasket className="h-6 w-6" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
-      <Card className="w-1/5 pt-6">
-        <CardContent>
-          <Input
-            placeholder="Prompt"
-            onChange={(e) => setPrompt(e.target.value ?? "")}
+      <Separator className="m-4 w-9/12" />
+      <Formik
+        initialValues={{
+          prompt: "",
+        }}
+        onSubmit={async (values) => {
+          setRecepieLoading(true);
+          const res = await createRecipeMut({ prompt: values.prompt });
+          if (!res) {
+            return;
+          }
+          if (!res.image_url) {
+            const imageUrl = await getImage({ query: res?.name ?? "" });
+            setRecipeUrl(imageUrl);
+          } else {
+            setRecipeUrl(res.image_url);
+          }
+          // const imageUrl = await getImage({ query: res?.name ?? "" });
+          setRecipe({
+            title: res?.name ?? "",
+            ingredients: res?.Ingredients?.map((ing) => {
+              return {
+                id: ing.id,
+                name: ing.name,
+                description: ing.description,
+                image_url: ing.image_url,
+              };
+            }),
+            instructions: res?.Instructions ?? [],
+          });
+          setRecepieLoading(false);
+        }}
+        className="flex w-full justify-center"
+      >
+        <Form className="flex w-full items-center justify-center align-middle">
+          <Field
+            name="prompt"
+            as={Input}
+            placeholder="Need some inspiration? How about a 'Healthy breakfast'"
+            // onChange={(e) => setPrompt(e.target.value ?? "")}
+            className="m-4 w-1/2 border-none shadow-xl"
           />
-          {/* <Button
-            onClick={async () => {
-              console.log("Unsafe");
-              mut();
-            }}
-          >
-            Unsafe
-          </Button> */}
-
-          {/* <Button
-            onClick={async () => {
-              console.log("Unsafe");
-              mut2({ prompt: "I want to make a carne asada" });
-            }}
-          >
-            carnita
-          </Button> */}
-          <Button
-            onClick={async () => {
-              setRecepieLoading(true);
-              const res = await createRecipeMut({ prompt: prompt });
-              if (!res) {
-                return;
-              }
-              if (!res.image_url) {
-                const imageUrl = await getImage({ query: res?.name ?? "" });
-                setRecipeUrl(imageUrl);
-              } else {
-                setRecipeUrl(res.image_url);
-              }
-              // const imageUrl = await getImage({ query: res?.name ?? "" });
-              setRecipe({
-                title: res?.name ?? "",
-                ingredients: res?.Ingredients?.map((ing) => {
-                  return {
-                    id: ing.id,
-                    name: ing.name,
-                    description: ing.description,
-                    image_url: ing.image_url,
-                  };
-                }),
-                instructions: res?.Instructions ?? [],
-              });
-              setRecepieLoading(false);
-            }}
-          >
+          <Button type="submit" className="m-4 shadow-xl">
             Create Recipe
           </Button>
-        </CardContent>
-      </Card>
+        </Form>
+      </Formik>
+
+      {recepieLoading && <p>Loading Recipe...</p>}
       {recipe && (
         <Card className="w-3/4">
           <CardHeader>
-            <p className="text-xl font-bold">{recipe.title}</p>
+            <div className="flex w-full justify-between">
+              <p className="text-xl font-bold">{recipe.title}</p>
+              <div className="flex space-x-4">
+                <Button variant={"outline"}>
+                  {recipe.Users?.length == 0 ? (
+                    <Star className="h-6 w-6" />
+                  ) : (
+                    <StarOff className="h-6 w-6" fill="yellow" />
+                  )}
+                </Button>
+                <Button>
+                  <ShoppingBasket className="h-6 w-6" />
+                </Button>
+                <Button
+                  onClick={() => {
+                    setRecipe(null);
+                    setRecipeUrl(null);
+                  }}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="">
             <div className="flex space-x-2">
               <div>
-                <img src={recipeUrl} alt={recipe.title} className="h-48 w-48" />
+                <img
+                  src={recipeUrl ?? ""}
+                  alt={recipe.title}
+                  className="h-48 w-48"
+                />
               </div>
               <div className="flex flex-col">
                 <p className="text-lg font-semibold">Ingredients:</p>

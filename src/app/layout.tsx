@@ -4,6 +4,8 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "rbrgs/trpc/react";
+import { SessionProvider } from "next-auth/react";
+import SessionWrapper from "./SessionWrapper";
 
 export const metadata: Metadata = {
   title: "FridaGo",
@@ -18,7 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <TRPCReactProvider>
+          <SessionWrapper>{children}</SessionWrapper>
+        </TRPCReactProvider>
       </body>
     </html>
   );
