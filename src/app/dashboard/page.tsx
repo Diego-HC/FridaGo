@@ -69,7 +69,7 @@ export default function Dashboard() {
         <CardHeader>My list</CardHeader>
         <CardContent>
           <>
-            <div>
+            <div className="flex w-full flex-wrap justify-evenly">
               {listLoading ? (
                 <Card>
                   <Skeleton className="h-10" />
@@ -92,7 +92,7 @@ export default function Dashboard() {
                 ))
               )}
             </div>
-            <Formik
+            {/* <Formik
               initialValues={{ productName: "", quantity: 1 }}
               onSubmit={async (values) => {
                 await mutateAsync({
@@ -141,10 +141,9 @@ export default function Dashboard() {
                   </Card>
                 ))
               )}
-            </div>
+            </div> */}
           </>
         </CardContent>
-        <CardFooter>Footer</CardFooter>
       </Card>
     </div>
   );
