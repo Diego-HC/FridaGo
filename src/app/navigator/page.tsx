@@ -173,8 +173,8 @@ function NavigatorInner() {
 
     const dest = searchParams.get("destination");
     if (dest === "queue") {
-      const bestQueue = getBestQueue();
-      setBestQueue(bestQueue);
+      // const bestQueue = getBestQueue();
+      // setBestQueue(bestQueue);
     } else if (dest != null) {
       console.log(dest);
       const index = destinations.findIndex((d) => d.name === dest);
@@ -247,6 +247,21 @@ function NavigatorInner() {
     setPosition(newPosition);
   }, [bestQueue, coords, currentDestination, orientation]);
 
+  const handleGetQueue = () => {
+    console.log("go to line");
+    getBestQueue()
+      .then((bestQueue) => {
+        setBestQueue(bestQueue);
+        setCurrentDestination(undefined);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+    // const bestQueue = await getBestQueue();
+    // setBestQueue(bestQueue);
+    // setCurrentDestination(undefined);
+  };
+
   const arrowStyle = {
     transform: `rotate(${orientation.alpha - bearing}deg)`,
   };
@@ -285,12 +300,7 @@ function NavigatorInner() {
         variant="outline"
         size="icon"
         className="absolute right-3 top-1/4 z-10"
-        onClick={() => {
-          console.log("go to line");
-          const bestQueue = getBestQueue();
-          setBestQueue(bestQueue);
-          setCurrentDestination(undefined);
-        }}
+        onClick={handleGetQueue}
       >
         <ShoppingCartIcon className="h-4 w-4" />
       </Button>
@@ -340,8 +350,6 @@ function NavigatorInner() {
             {bestQueue ? "Queue" : "Next product"}: {text}
           </h1>
           <p>ETA: {Math.ceil(distance / 100)}min</p>
-          <p>{coords?.latitude}</p>
-          <p>{coords?.longitude}</p>
         </div>
       </div>
     </div>
