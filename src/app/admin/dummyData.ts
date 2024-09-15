@@ -1,12 +1,18 @@
-export type Pasillo = {
-  id: number;
-  detalles: {
-    area: string;
-    cantidad: string;
-  }[];
-  fecha: string;
-};
+interface Detalle {
+  area: string;
+  cantidad: string;
+}
 
+interface Pasillo {
+  id: number;
+  fecha: string;
+  detalles: Detalle[];
+}
+
+interface TransformedData {
+  fecha: string;
+  data: Record<string, string>; // Mapping area (dynamic) to string (cantidad)
+}
 export function getRandomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -154,23 +160,25 @@ const dummyDataPasillo: Pasillo[] = [
   },
 ];
 
-const transformedDataPasillo = dummyDataPasillo.reduce(
+const transformedDataPasillo = dummyDataPasillo.reduce<
+  Record<string, TransformedData>
+>(
   (acc, pasillo) => {
-    const fecha = pasillo.fecha.toString();
+    const fecha = pasillo.fecha;
     if (!acc[fecha]) {
-      acc[fecha] = { fecha };
+      acc[fecha] = { fecha, data: {} }; // Initialize the 'data' field for each 'fecha'
     }
 
     pasillo.detalles.forEach((detalle) => {
-      if (!acc[fecha][detalle.area]) {
-        acc[fecha][detalle.area] = 0;
+      if (!acc[fecha]!.data[detalle.area]) {
+        acc[fecha]!.data[detalle.area] = "0"; // Initialize the value if it doesn't exist
       }
-      acc[fecha][detalle.area] += parseInt(detalle.cantidad);
+      acc[fecha]!.data[detalle.area] = detalle.cantidad; // Update with the cantidad
     });
 
     return acc;
   },
-  {} as Record<string, any>,
+  {} as Record<string, TransformedData>,
 );
 
 export const finalDataPasillo = Object.values(transformedDataPasillo);
