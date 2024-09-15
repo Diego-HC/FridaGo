@@ -98,9 +98,9 @@ model Recepie {
   id           String                 @id @default(cuid())
   name         String
   description  String
-  embd         Unsupported("vector")?
   Instructions String[]
   image_url    String?
+  embd         Unsupported("vector")?
   Ingredients  Inventory[]            @relation("InventoryToRecepie")
   Users        User[]                 @relation("RecepieToUser")
 

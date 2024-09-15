@@ -4,6 +4,8 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "rbrgs/trpc/react";
+import { SessionProvider } from "next-auth/react";
+import SessionWrapper from "./SessionWrapper";
 import Link from "next/link";
 import { ChartBarIcon, HomeIcon, UserIcon } from "@heroicons/react/outline";
 
@@ -20,7 +22,9 @@ export default async function RootLayout({
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
         <TRPCReactProvider>
-          <div>{children}</div>
+          <SessionWrapper>
+            <div>{children}</div>
+          </SessionWrapper>
         </TRPCReactProvider>
 
         <nav className="shadow-t-lg fixed bottom-0 w-screen bg-white">
