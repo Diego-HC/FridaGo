@@ -17,18 +17,19 @@ const client = createClient(
 );
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  // apiKey: process.env.OPENAI_API_KEY,
+  baseURL: "https://fridaplatform.com/v1",
 });
 
-function getRecipeStrings(recipe: Recepie) {
+export function getRecipeStrings(recipe: Recepie) {
   return [recipe.name, ...recipe.Instructions];
 }
 
-function getIngredientStrings(ingredient: Inventory) {
+export function getIngredientStrings(ingredient: Inventory) {
   return [ingredient.name, ingredient.description];
 }
 
-async function registerEmbedding({
+export async function registerEmbedding({
   context,
   id,
   AddEmbedding,

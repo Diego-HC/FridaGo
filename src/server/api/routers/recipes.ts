@@ -1,16 +1,15 @@
 import { z } from "zod";
 
+import { createClient } from "@supabase/supabase-js";
+import OpenAI from "openai";
+import { zodResponseFormat } from "openai/helpers/zod.mjs";
 import {
   createTRPCRouter,
   protectedProcedure,
   publicProcedure,
 } from "rbrgs/server/api/trpc";
-import OpenAI from "openai";
-import { Inventory, Recepie } from "@prisma/client";
 import { getEmbedding } from "../common/embeddings/getEmbeddings";
-import { zodResponseFormat } from "openai/helpers/zod.mjs";
-import { Sql } from "@prisma/client/runtime/library";
-import { SupabaseClient, createClient } from "@supabase/supabase-js";
+import { getRecipeStrings, registerEmbedding } from "./preprocesEmbeddings";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -137,6 +136,24 @@ export const recipesRouter = createTRPCRouter({
           Ingredients: true,
         },
       });
+      const strings = getRecipeStrings({
+        id: res.id,
+        name: res.name,
+        description: res.description,
+        image_url: res.image_url,
+        Instructions: res.Instructions,
+      });
+      for (const string of strings) {
+        void registerEmbedding({
+          context: string,
+          id: res.id,
+          AddEmbedding: async (id, context, embedding) => {
+            await ctx.db
+              .$executeRaw`INSERT INTO public."VectorStore" ("recepieId", context, vector) VALUES (${id}, ${context}, (${embedding}))`;
+          },
+        });
+      }
+
       return res;
     }),
   recommendBestIngredients: protectedProcedure

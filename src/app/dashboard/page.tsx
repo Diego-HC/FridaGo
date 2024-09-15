@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { set } from "zod";
 import RecipeComp from "rbrgs/app/dashboard/RecipeComp";
 import ItemComp from "rbrgs/app/dashboard/ItemComp";
+import Markdown from "react-markdown";
 
 function SelectProduct({
   onChange,
@@ -75,12 +76,12 @@ export default function Dashboard() {
   const { mutateAsync: deleteItem } = api.lists.deleteItemList.useMutation();
   const [bestIngredients, setBestIngredients] = React.useState<
     | {
-      similarity: number;
-      name: string;
-      description: string;
-      location: string;
-      image_url: string;
-    }[]
+        similarity: number;
+        name: string;
+        description: string;
+        location: string;
+        image_url: string;
+      }[]
     | null
   >(null);
 
@@ -126,24 +127,22 @@ export default function Dashboard() {
 
   const [previousContext, setPreviousContext] = React.useState<
     | {
-      similarity: number;
-      context: string;
-      recepieid?: string | undefined;
-      inventoryid?: number | undefined;
-    }[]
+        similarity: number;
+        context: string;
+        recepieid?: string | undefined;
+        inventoryid?: number | undefined;
+      }[]
     | null
   >(null);
 
   return (
     <div className="bg-slate-50">
-      <h2 className="bg-slate-50 ml-12 text-3xl font-semibold text-gray-700">
-        Admin Dashboard
+      <h2 className="ml-12 bg-slate-50 text-3xl font-semibold text-gray-700">
+        My List
       </h2>
 
-
-      <div className="bg-slate-50 flex gap-8 min-h-[calc(100vh-4rem)] flex-col items-center justify-center align-middle">
-
-        <Card className="h-4/5 w-2/3">
+      <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center gap-8 bg-slate-50 align-middle">
+        <Card className="h-4/5 w-3/4">
           <CardHeader>
             My list
             <div className="my-4 flex w-full">
@@ -163,18 +162,9 @@ export default function Dashboard() {
                   lista?.map((product) => (
                     <Card
                       key={product.id}
-                      className="flex items-center p-4 align-middle"
+                      className="flex items-center overflow-hidden p-4 align-middle"
                       onClick={() => {
                         void router.push(
-                          // {
-                          //   pathname: "/navigator",
-                          //   query: {
-                          //     destination: product.item.id,
-                          //     imageUrl: encodeURIComponent(
-                          //       product.item.image_url,
-                          //     ),
-                          //   },
-                          // },
                           `/navigator?destination=${product.item.name}&imageUrl=${encodeURIComponent(product.item.image_url)}`,
                         );
                       }}
@@ -204,14 +194,14 @@ export default function Dashboard() {
                 )}
               </div>
             </>
-            <Button
+            {/* <Button
               className="mt-4"
               onClick={async () => {
                 await refreshEmbeddings();
               }}
             >
               AddEmbs
-            </Button>
+            </Button> */}
           </CardContent>
         </Card>
         <Card className="h-4/5 w-2/3">
@@ -227,6 +217,11 @@ export default function Dashboard() {
                   <Card
                     key={product.name}
                     className="flex items-center p-4 align-middle"
+                    onClick={() => {
+                      void router.push(
+                        `/navigator?destination=${product.name}&imageUrl=${encodeURIComponent(product.image_url)}`,
+                      );
+                    }}
                   >
                     <img
                       src={product.image_url}
@@ -248,10 +243,11 @@ export default function Dashboard() {
               {messages.map((message, index) => (
                 <div
                   key={index}
-                  className={`${message.role === "user" ? "text-right" : "text-left"
-                    }`}
+                  className={`${
+                    message.role === "user" ? "text-right" : "text-left"
+                  } rounded-md border border-gray-300 p-2`}
                 >
-                  {message.content}
+                  <Markdown>{message.content}</Markdown>
                 </div>
               ))}
             </div>
@@ -271,7 +267,10 @@ export default function Dashboard() {
                   previousConversation: { messages: messages },
                 });
                 console.log(res);
-                if (res?.chatResponse?.length && res?.chatResponse?.length > 0) {
+                if (
+                  res?.chatResponse?.length &&
+                  res?.chatResponse?.length > 0
+                ) {
                   setMessages((prev) => [
                     ...prev,
                     { role: "assistant", content: res?.chatResponse ?? "" },
@@ -308,7 +307,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
         {previousContext && (
-          <div className="bg-slate-50 m-2 flex max-w-full flex-wrap">
+          <div className="m-2 flex max-w-full flex-wrap bg-slate-50">
             <div className="m-2">
               <p>Recomended Recipes</p>
               <div className="flex">

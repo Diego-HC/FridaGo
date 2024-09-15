@@ -98,14 +98,12 @@ export default function Recepies() {
   const utils = api.useUtils();
 
   return (
-    <div className="bg-slate-50 ">
-      <h2 className=" ml-12 text-3xl font-semibold text-gray-700">
-        Admin Dashboard
-      </h2>
-      <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center p-6 bg-slate-50">
+    <div className="bg-slate-50">
+      <h2 className="ml-12 text-3xl font-semibold text-gray-700">Recipes</h2>
+      <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center bg-slate-50 p-6">
         {isRecepiesLoading && <p>Loading Recepies...</p>}
         {recepies && (
-          <div className="flex w-5/6 scroll-my-2 space-x-12 overflow-auto pt-7 pb-12">
+          <div className="flex w-5/6 scroll-my-2 space-x-12 overflow-auto pb-12 pt-7">
             {recepies.map((recepie) => (
               <Card
                 key={recepie.id}
@@ -252,7 +250,20 @@ export default function Recepies() {
                         <StarOff className="h-6 w-6" fill="yellow" />
                       )}
                     </Button>
-                    <Button>
+                    <Button
+                      onClick={async () => {
+                        await addToCart({
+                          items: recipe.ingredients?.map((ing) => {
+                            return {
+                              productName: ing.name,
+                              description: ing.description,
+                              image_url: ing.image_url,
+                            };
+                          }),
+                        });
+                        await utils.lists.getUsersLists.invalidate();
+                      }}
+                    >
                       <ShoppingBasket className="h-6 w-6" />
                     </Button>
                     <Button
@@ -272,16 +283,18 @@ export default function Recepies() {
                     <img
                       src={recipeUrl!}
                       alt={recipe.title}
-                      className="pt-2 pl-4 h-48 w-48"
+                      className="h-48 w-48 pl-4 pt-2"
                     />
                   </div>
                   <div className="flex flex-col px-6">
-                    <p className="text-lg font-semibold pb-4">Ingredients:</p>
-                    <ul className="flex max-h-80 w-full flex-col overflow-auto gap-4">
+                    <p className="pb-4 text-lg font-semibold">Ingredients:</p>
+                    <ul className="flex max-h-80 w-full flex-col gap-4 overflow-auto">
                       {recipe.ingredients.map((ingredient) => (
                         <li key={ingredient.id} className="flex space-x-2">
                           <Card className="flex w-full flex-col align-top">
-                            <CardHeader className="text-semibold">{ingredient.name}</CardHeader>
+                            <CardHeader className="text-semibold">
+                              {ingredient.name}
+                            </CardHeader>
                             <CardContent className="flex w-full">
                               <div className="flex justify-center">
                                 <img
@@ -289,7 +302,9 @@ export default function Recepies() {
                                   alt={ingredient.name}
                                   className="h-10 w-10 object-cover pr-2 pt-2"
                                 />
-                                <p className="text-gray-500">{ingredient.description}</p>
+                                <p className="text-gray-500">
+                                  {ingredient.description}
+                                </p>
                               </div>
                             </CardContent>
                           </Card>

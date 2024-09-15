@@ -9,14 +9,12 @@ import { v4 as uuidv4 } from "uuid";
 import { Card, CategoryBar, BarList, LineChart, BarChart } from "@tremor/react";
 import { MdOutlineFileUpload, MdChatBubbleOutline } from "react-icons/md";
 
-
 import {
   dummyDataAisle,
   getRandomInt,
   sentimentData,
   waitTimeLane,
 } from "./dummyData";
-
 
 import Chatbot from "./Chatbot";
 import ImageView from "./image-view";
@@ -76,7 +74,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="bg-gray-70 min-h-screen p-12 bg-slate-50">
+    <div className="bg-gray-70 min-h-screen bg-slate-50 p-12">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-5xl font-bold text-[#0278d3]">FridaGo</h1>
         <div className="flex gap-8">
@@ -106,7 +104,7 @@ export default function AdminDashboard() {
       <div className="p-8">
         <div className="my-10 flex flex-row gap-10">
           <Card>
-            <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong text-lg font-medium">
+            <h3 className="dark:text-dark-tremor-content-strong text-lg font-medium text-tremor-content-strong">
               Number of people per aisle and date
             </h3>
             <LineChart
@@ -119,10 +117,10 @@ export default function AdminDashboard() {
             />
           </Card>
           <Card className="max-w-sm">
-            <h3 className="text-tremor-title text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
+            <h3 className="dark:text-dark-tremor-content-strong text-tremor-title font-medium text-tremor-content-strong">
               Percentage Stock by Area
             </h3>
-            <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content mt-4 flex items-center justify-between">
+            <p className="dark:text-dark-tremor-content mt-4 flex items-center justify-between text-tremor-default text-tremor-content">
               <span>Cleaning products</span>
             </p>
             <CategoryBar
@@ -130,7 +128,7 @@ export default function AdminDashboard() {
               colors={["rose", "orange", "yellow", "emerald"]}
               markerValue={getRandomInt(70, 100)}
             />
-            <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content mt-4 flex items-center justify-between">
+            <p className="dark:text-dark-tremor-content mt-4 flex items-center justify-between text-tremor-default text-tremor-content">
               <span>Drinks</span>
             </p>
             <CategoryBar
@@ -138,7 +136,7 @@ export default function AdminDashboard() {
               colors={["rose", "orange", "yellow", "emerald"]}
               markerValue={getRandomInt(40, 90)}
             />
-            <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content mt-4 flex items-center justify-between">
+            <p className="dark:text-dark-tremor-content mt-4 flex items-center justify-between text-tremor-default text-tremor-content">
               <span>Snacks</span>
             </p>
             <CategoryBar
@@ -151,7 +149,7 @@ export default function AdminDashboard() {
 
         <div className="my-10 flex flex-row gap-10">
           <Card className="w-1/2">
-            <h3 className="text-tremor-title text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
+            <h3 className="dark:text-dark-tremor-content-strong text-tremor-title font-medium text-tremor-content-strong">
               Sentiment analysis of customers after their purchase
             </h3>
             <BarChart
@@ -165,10 +163,10 @@ export default function AdminDashboard() {
           </Card>
 
           <Card className="w-1/2">
-            <h3 className="text-tremor-title text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
+            <h3 className="dark:text-dark-tremor-content-strong text-tremor-title font-medium text-tremor-content-strong">
               Wait time per lane
             </h3>
-            <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content mt-4 flex items-center justify-between">
+            <p className="dark:text-dark-tremor-content mt-4 flex items-center justify-between text-tremor-default text-tremor-content">
               <span>Lane</span>
               <span>Wait time (min)</span>
             </p>
@@ -176,32 +174,58 @@ export default function AdminDashboard() {
           </Card>
         </div>
         <div className="space-y-3">
-          <p className="text-center font-mono text-sm text-slate-500">
-
-          </p>
-
+          <p className="text-center font-mono text-sm text-slate-500"></p>
         </div>
         <div className="flex flex-row gap-10">
           <Card>
-            <h3 className="text-tremor-title pb-3 text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
+            <h3 className="dark:text-dark-tremor-content-strong pb-3 text-tremor-title font-medium text-tremor-content-strong">
               Aisle View Real Time
             </h3>
-            <img src="http://localhost:8000/aisle_view" alt="Video Feed" className=""></img>
+            <img
+              src="https://neutral-asp-useful.ngrok-free.app/aisle_view"
+              alt="Video Feed"
+              className=""
+            ></img>
           </Card>
 
           <div className="flex flex-col gap-10">
-
-            <Button variant="outline" className="h-40 flex flex-col" onClick={() => handleOpenView("http://localhost:8000/get_heatmap", "Heatmap")}>
+            <Button
+              variant="outline"
+              className="flex h-40 flex-col"
+              onClick={() =>
+                handleOpenView(
+                  "https://neutral-asp-useful.ngrok-free.app/get_heatmap",
+                  "Heatmap",
+                )
+              }
+            >
               <p className="text-left font-mono text-sm text-slate-500">
                 Heatmap
               </p>
-              <img src="http://localhost:8000/get_heatmap" alt="Video Feed" className="p-2 w-48"></img>
+              <img
+                src="https://neutral-asp-useful.ngrok-free.app/get_heatmap"
+                alt="Video Feed"
+                className="w-48 p-2"
+              ></img>
             </Button>
-            <Button variant="outline" className="h-40 flex flex-col" onClick={() => handleOpenView("http://localhost:8000/get_trajectories", "Trajectories")}>
+            <Button
+              variant="outline"
+              className="flex h-40 flex-col"
+              onClick={() =>
+                handleOpenView(
+                  "https://neutral-asp-useful.ngrok-free.app/get_trajectories",
+                  "Trajectories",
+                )
+              }
+            >
               <p className="text-center font-mono text-sm text-slate-500">
                 Trajectories
               </p>
-              <img src="http://localhost:8000/get_trajectories" alt="Video Feed" className="p-2 w-48"></img>
+              <img
+                src="https://neutral-asp-useful.ngrok-free.app/get_trajectories"
+                alt="Video Feed"
+                className="w-48 p-2"
+              ></img>
             </Button>
           </div>
         </div>
@@ -217,11 +241,15 @@ export default function AdminDashboard() {
         />
       )}
       {openView && (
-        <ImageView src={view} als={viewTitle} onClose={() => setOpenView(false)} open={openView} />
+        <ImageView
+          src={view}
+          als={viewTitle}
+          onClose={() => setOpenView(false)}
+          open={openView}
+        />
       )}
 
       <div className="h-10"></div>
     </div>
   );
 }
-
