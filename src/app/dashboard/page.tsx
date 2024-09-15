@@ -163,7 +163,7 @@ export default function Dashboard() {
                   lista?.map((product) => (
                     <Card
                       key={product.id}
-                      className="flex items-center p-4 align-middle"
+                      className="flex items-center p-4 align-middle overflow-hidden"
                       onClick={() => {
                         void router.push(
                           // {
