@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
     provider = "prisma-client-js"
 }
@@ -12,18 +9,16 @@ datasource db {
 }
 
 model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    createdBy   User   @relation(fields: [createdById], references: [id])
+    id          Int      @id @default(autoincrement())
+    name        String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
     createdById String
+    createdBy   User     @relation(fields: [createdById], references: [id])
 
     @@index([name])
 }
 
-// Necessary for Next auth
 model Account {
     id                       String  @id @default(cuid())
     userId                   String
@@ -37,8 +32,8 @@ model Account {
     scope                    String?
     id_token                 String? // @db.Text
     session_state            String?
-    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
     refresh_token_expires_in Int?
+    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
 }
@@ -52,14 +47,16 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    posts         Post[]
+    id             String     @id @default(cuid())
+    name           String?
+    email          String?    @unique
+    emailVerified  DateTime?
+    image          String?
+    accounts       Account[]
+    posts          Post[]
+    sessions       Session[]
+    UserList       UserList[]
+    MarkedRecepies Recepie[]  @relation("RecepieToUser")
 }
 
 model VerificationToken {
@@ -68,4 +65,42 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Inventory {
+    id          Int        @id @default(autoincrement())
+    name        String     @unique
+    description String
+    location    String
+    image_url   String
+    createdAt   DateTime   @default(now())
+    updatedAt   DateTime   @updatedAt
+    recepieId   String?
+    UserList    UserList[]
+    Recepies    Recepie[]  @relation("InventoryToRecepie")
+
+    @@index([name])
+}
+
+model UserList {
+    id            String    @id @default(cuid())
+    quantity      Int
+    userId        String
+    inventoryName String
+    item          Inventory @relation(fields: [inventoryName], references: [name])
+    user          User      @relation(fields: [userId], references: [id])
+
+    @@index([userId])
+}
+
+model Recepie {
+    id           String                 @id @default(cuid())
+    name         String                 @unique
+    description  String
+    Instructions String
+    embd         Unsupported("vector")?
+    Ingredients  Inventory[]            @relation("InventoryToRecepie")
+    Users        User[]                 @relation("RecepieToUser")
+
+    @@index([name])
 }
