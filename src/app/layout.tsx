@@ -40,7 +40,7 @@ export default async function RootLayout({
             </li>
             <li>
               <Link
-                href="/list"
+                href="/dashboard/recipes"
                 className="flex flex-col items-center text-black hover:text-blue-500"
               >
                 <ChartBarIcon className="h-6 w-6" />
