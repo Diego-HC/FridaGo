@@ -193,14 +193,14 @@ export default function Dashboard() {
                 )}
               </div>
             </>
-            <Button
+            {/* <Button
               className="mt-4"
               onClick={async () => {
                 await refreshEmbeddings();
               }}
             >
               AddEmbs
-            </Button>
+            </Button> */}
           </CardContent>
         </Card>
         <Card className="h-4/5 w-2/3">
