@@ -78,7 +78,7 @@ export default function AdminDashboard() {
   return (
     <div className="bg-gray-70 min-h-screen p-12 bg-slate-50">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-5xl font-bold text-gray-800">FridaGo</h1>
+        <h1 className="text-5xl font-bold text-[#0278d3]">FridaGo</h1>
         <div className="flex gap-8">
           <Button variant="outline" onClick={triggerFileInput}>
             <MdOutlineFileUpload className="mr-2 text-lg" />
