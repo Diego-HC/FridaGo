@@ -11,24 +11,28 @@ interface ImageViewProps {
 }
 
 const ImageView: React.FC<ImageViewProps> = ({ src, als, onClose, open }) => {
-    const [imageUrl, setImageUrl] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(src);
-                const data = await response.json();
-                setImageUrl(data.url);
-                console.log(data);
+                await fetch(src);
                 setLoading(false);
-            } catch (error) {
-                console.error('Error fetching image:', error);
+            } catch (error: unknown) {
+                if (error instanceof Error) {
+                    console.error('Error fetching image:', error.message);
+                } else {
+                    console.error('Unknown error:', error);
+                }
             }
         };
 
-        fetchData();
+        fetchData()
+        .catch((error) => {
+            console.error('Error fetching image:', error);
+        });
+        
     }, []);
 
     return (
