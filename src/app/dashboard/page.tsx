@@ -159,15 +159,6 @@ export default function Dashboard() {
                     className="flex items-center p-4 align-middle"
                     onClick={() => {
                       void router.push(
-                        // {
-                        //   pathname: "/navigator",
-                        //   query: {
-                        //     destination: product.item.id,
-                        //     imageUrl: encodeURIComponent(
-                        //       product.item.image_url,
-                        //     ),
-                        //   },
-                        // },
                         `/navigator?destination=${product.item.name}&imageUrl=${encodeURIComponent(product.item.image_url)}`,
                       );
                     }}
@@ -197,14 +188,14 @@ export default function Dashboard() {
               )}
             </div>
           </>
-          <Button
+          {/* <Button
             className="mt-4"
             onClick={async () => {
               await refreshEmbeddings();
             }}
           >
             AddEmbs
-          </Button>
+          </Button> */}
         </CardContent>
       </Card>
       <Card className="h-4/5 w-2/3">
