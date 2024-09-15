@@ -253,7 +253,7 @@ export default function Recepies() {
                     <Button
                       onClick={async () => {
                         await addToCart({
-                          items: recepie.Ingredients?.map((ing) => {
+                          items: recipe.ingredients?.map((ing) => {
                             return {
                               productName: ing.name,
                               description: ing.description,
