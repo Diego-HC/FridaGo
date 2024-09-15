@@ -11,7 +11,7 @@ export default function RecipeComp({ id }: { id: string }) {
           "Loading..."
         ) : (
           <img
-            src={data?.image_url!}
+            src={data?.image_url ?? ""}
             alt={data?.name}
             className="h-32 w-32 object-cover"
           />
