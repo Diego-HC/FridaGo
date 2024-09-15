@@ -26,7 +26,7 @@ export default async function RootLayout({
             <div>{children}</div>
           </SessionWrapper>
         </TRPCReactProvider>
-
+        <nav className="h-32"></nav>
         <nav className="shadow-t-lg fixed bottom-0 w-screen bg-white">
           <ul className="flex justify-around py-4">
             <li>

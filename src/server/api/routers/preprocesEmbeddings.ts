@@ -72,7 +72,6 @@ export const embeddingsRouter = createTRPCRouter({
           },
         });
       }
-      break;
     }
     const IngredientsToStrings = {} as Record<string, string[]>;
     const ingredients = await ctx.db.inventory.findMany({});
@@ -95,7 +94,6 @@ export const embeddingsRouter = createTRPCRouter({
           },
         });
       }
-      break;
     }
   }),
   processMessage: protectedProcedure
@@ -117,11 +115,12 @@ export const embeddingsRouter = createTRPCRouter({
             z.object({
               similarity: z.number(),
               context: z.string(),
-              recepieid: z.string().optional(),
-              inventoryid: z.number().optional(),
+              recepieid: z.string().optional().nullable(),
+              inventoryid: z.number().optional().nullable(),
             }),
           )
-          .optional(),
+          .optional()
+          .nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -147,7 +146,14 @@ export const embeddingsRouter = createTRPCRouter({
       // merge contexts
       if (input.previousContext) {
         input.previousContext.forEach((item) => {
-          context.data?.push(item);
+          context.data?.push(
+            item as {
+              similarity: number;
+              context: string;
+              recepieid: string | undefined;
+              inventoryid: number | undefined;
+            },
+          );
         });
       }
 

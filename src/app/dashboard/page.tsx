@@ -21,6 +21,9 @@ import {
 } from "r/components/ui/select";
 import { SelectTrigger, SelectValue } from "@radix-ui/react-select";
 import { useRouter } from "next/navigation";
+import { set } from "zod";
+import RecipeComp from "./recipeComp";
+import ItemComp from "./itemComp";
 
 function SelectProduct({
   onChange,
@@ -77,6 +80,17 @@ export default function Dashboard() {
       content: string;
     }[]
   >([]);
+
+  const [previousContext, setPreviousContext] = React.useState<
+    | {
+        similarity: number;
+        context: string;
+        recepieid?: string | undefined;
+        inventoryid?: number | undefined;
+      }[]
+    | null
+  >(null);
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center align-middle">
       <Card className="h-4/5 w-2/3">
@@ -154,9 +168,13 @@ export default function Dashboard() {
               }
               setMessages((prev) => [
                 ...prev,
-                { role: "user", content: values.message! },
+                { role: "user", content: values.message },
               ]);
-              const res = await processMessag({ message: values.message });
+              const res = await processMessag({
+                message: values.message,
+                previousContext: previousContext,
+                previousConversation: { messages: messages },
+              });
               console.log(res);
               if (
                 res?.chatResponse !== undefined &&
@@ -167,6 +185,21 @@ export default function Dashboard() {
                   ...prev,
                   { role: "assistant", content: res?.chatResponse! },
                 ]);
+                if (res?.context) {
+                  const seted = new Set<{
+                    similarity: number;
+                    context: string;
+                    recepieid?: string | undefined;
+                    inventoryid?: number | undefined;
+                  }>();
+                  previousContext?.forEach((item) => {
+                    seted.add(item);
+                  });
+                  res.context.forEach((item) => {
+                    seted.add(item);
+                  });
+                  setPreviousContext(Array.from(seted));
+                }
               }
             }}
           >
@@ -183,6 +216,54 @@ export default function Dashboard() {
           </Formik>
         </CardContent>
       </Card>
+      {previousContext && (
+        <div className="m-2 flex max-w-full flex-wrap">
+          <div className="m-2">
+            <p>Recomended Recipes</p>
+            <div className="flex">
+              {
+                //unique recepies by recepieid
+                Array.from(
+                  previousContext
+                    .filter((item) => item.recepieid !== undefined)
+                    .reduce((acc, item) => {
+                      if (item.recepieid) {
+                        acc.add(item.recepieid);
+                      }
+                      return acc;
+                    }, new Set<string>()),
+                )
+                  .slice(0, 5)
+                  .map((item) => (
+                    <RecipeComp key={item} id={item!} />
+                  ))
+              }
+            </div>
+          </div>
+          <div className="m-2">
+            <p>Recomended Products</p>
+            <div className="flex">
+              {
+                //unique products by inventoryid
+                Array.from(
+                  previousContext
+                    .filter((item) => item.inventoryid !== undefined)
+                    .reduce((acc, item) => {
+                      if (item.inventoryid) {
+                        acc.add(item.inventoryid);
+                      }
+                      return acc;
+                    }, new Set<number>()),
+                )
+                  .slice(0, 5)
+                  .map((item) => (
+                    <ItemComp key={item} id={item} />
+                  ))
+              }
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

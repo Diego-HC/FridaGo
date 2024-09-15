@@ -63,34 +63,6 @@ async function createNewRecepie(prompt: string) {
   }
   return null;
 }
-/**
-
-
-drop function if exists similarity_search_inventory (embedding vector (1536), match_count bigint);
-
-create or replace function similarity_search_inventory(embedding vector(1536), match_count bigint, min_similarity float)
-returns table (similarity float, name text, description text, location text, image_url text)
-language plpgsql
-as $$
-begin
-return query
-select
-    (public."Inventory".embd <#> embedding) * -1 as similarity,
-    public."Inventory".name,
-    public."Inventory".description,
-    public."Inventory".location,
-    public."Inventory".image_url
-from public."Inventory"
-where ((public."Inventory".embd <#> embedding) * -1) >= min_similarity 
-order by embd <#> embedding
-limit match_count;
-end;
-$$;
-
-GRANT EXECUTE ON FUNCTION similarity_search_inventory(vector, bigint) TO public;
-GRANT SELECT ON TABLE public."Inventory" TO public;
-    */
-
 export const recipesRouter = createTRPCRouter({
   createRecipeFromPrompt: protectedProcedure
     .input(
@@ -230,5 +202,20 @@ export const recipesRouter = createTRPCRouter({
         },
       });
       return res;
+    }),
+  getRecipeById: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const recipe = await ctx.db.recepie.findUnique({
+        where: { id: input.id },
+        include: {
+          Users: {
+            where: {
+              id: { equals: ctx.session?.user.id },
+            },
+          },
+        },
+      });
+      return recipe;
     }),
 });
