@@ -23,8 +23,8 @@ import {
 import { SelectTrigger, SelectValue } from "@radix-ui/react-select";
 import { useRouter } from "next/navigation";
 import { set } from "zod";
-import RecipeComp from "./recipeComp";
-import ItemComp from "./itemComp";
+import RecipeComp from "rbrgs/app/dashboard/RecipeComp";
+import ItemComp from "rbrgs/app/dashboard/ItemComp";
 
 function SelectProduct({
   onChange,
