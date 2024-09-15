@@ -12,7 +12,7 @@ import {
 } from "./utils";
 import { useSearchParams } from "next/navigation";
 import { Button } from "r/components/ui/button";
-import { ShoppingCartIcon } from "lucide-react";
+import { ShoppingCartIcon, ShoppingCart } from "lucide-react";
 
 type Orientation = {
   alpha: number;
@@ -221,19 +221,6 @@ function NavigatorInner() {
       destinationCoords.longitude,
     );
     setDistance(distance);
-
-    // if (distance < 2) {
-    //   setCurrentDestination((prev) => {
-    //     if (prev === destinations.length - 1) {
-    //       const bestQueue = getBestQueue();
-    //       setBestQueue(bestQueue);
-
-    //       return null;
-    //     }
-    //     return prev != null ? prev + 1 : prev;
-    //   });
-    // }
-
     setScale(getObjectScale(distance));
 
     const isVisible = isObjectVisible(
@@ -253,13 +240,11 @@ function NavigatorInner() {
       .then((bestQueue) => {
         setBestQueue(bestQueue);
         setCurrentDestination(undefined);
+        setImgSource("/shopping-cart-vector-clipart.png");
       })
       .catch((err) => {
         console.error(err);
       });
-    // const bestQueue = await getBestQueue();
-    // setBestQueue(bestQueue);
-    // setCurrentDestination(undefined);
   };
 
   const arrowStyle = {
@@ -309,7 +294,7 @@ function NavigatorInner() {
       <div
         style={{
           position: "absolute",
-          top: "55%",
+          top: "50%",
           left: "50%",
           transform: "translate(-50%) rotate3d(1, 0, 0, 45deg)",
         }}
