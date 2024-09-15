@@ -11,6 +11,8 @@ import {
   isObjectVisible,
 } from "./utils";
 import { useSearchParams } from "next/navigation";
+import { Button } from "r/components/ui/button";
+import { ShoppingCartIcon } from "lucide-react";
 
 type Orientation = {
   alpha: number;
@@ -171,10 +173,19 @@ function NavigatorInner() {
 
     const dest = searchParams.get("destination");
     if (dest === "queue") {
-      const bestQueue = getBestQueue();
-      setBestQueue(bestQueue);
+      // const bestQueue = getBestQueue();
+      // setBestQueue(bestQueue);
     } else if (dest != null) {
-      setCurrentDestination(destinations.findIndex((d) => d.name === dest));
+      console.log(dest);
+      const index = destinations.findIndex((d) => d.name === dest);
+      if (index === -1) {
+        destinations.push({
+          name: dest,
+          latitude: 25.6487015,
+          longitude: -100.2898314,
+        });
+      }
+      setCurrentDestination(destinations.length - 1);
     }
 
     const imageUrl = searchParams.get("imageUrl");
@@ -236,6 +247,21 @@ function NavigatorInner() {
     setPosition(newPosition);
   }, [bestQueue, coords, currentDestination, orientation]);
 
+  const handleGetQueue = () => {
+    console.log("go to line");
+    getBestQueue()
+      .then((bestQueue) => {
+        setBestQueue(bestQueue);
+        setCurrentDestination(undefined);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+    // const bestQueue = await getBestQueue();
+    // setBestQueue(bestQueue);
+    // setCurrentDestination(undefined);
+  };
+
   const arrowStyle = {
     transform: `rotate(${orientation.alpha - bearing}deg)`,
   };
@@ -270,6 +296,15 @@ function NavigatorInner() {
           </CardContent>
         </Card>
       </div>
+      <Button
+        variant="outline"
+        size="icon"
+        className="absolute right-3 top-1/4 z-10"
+        onClick={handleGetQueue}
+      >
+        <ShoppingCartIcon className="h-4 w-4" />
+      </Button>
+
       <video autoPlay playsInline style={{ width: "100%", height: "100%" }} />
       <div
         style={{
@@ -297,15 +332,7 @@ function NavigatorInner() {
           transform: "translate(50%, -20vh)",
         }}
       >
-        {/* <div
-          style={{
-            ...objectStyle,
-            width: "50px",
-            height: "50px",
-            backgroundColor: "red",
-            borderRadius: "50%",
-          }}
-        /> */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imgSource}
           alt="Product"
@@ -323,8 +350,6 @@ function NavigatorInner() {
             {bestQueue ? "Queue" : "Next product"}: {text}
           </h1>
           <p>ETA: {Math.ceil(distance / 100)}min</p>
-          <p>{coords?.latitude}</p>
-          <p>{coords?.longitude}</p>
         </div>
       </div>
     </div>

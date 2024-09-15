@@ -3,6 +3,7 @@ import { createCallerFactory, createTRPCRouter } from "rbrgs/server/api/trpc";
 import { productsRouter } from "./routers/products";
 import { listsRouter } from "./routers/lists";
 import { recipesRouter } from "./routers/recipes";
+import { embeddingsRouter } from "./routers/preprocesEmbeddings";
 
 /**
  * This is the primary router for your server.
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
   products: productsRouter,
   lists: listsRouter,
   recipes: recipesRouter,
+  embeddings: embeddingsRouter,
 });
 
 // export type definition of API

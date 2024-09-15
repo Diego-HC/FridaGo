@@ -63,34 +63,6 @@ async function createNewRecepie(prompt: string) {
   }
   return null;
 }
-/**
-
-
-drop function if exists similarity_search_inventory (embedding vector (1536), match_count bigint);
-
-create or replace function similarity_search_inventory(embedding vector(1536), match_count bigint, min_similarity float)
-returns table (similarity float, name text, description text, location text, image_url text)
-language plpgsql
-as $$
-begin
-return query
-select
-    (public."Inventory".embd <#> embedding) * -1 as similarity,
-    public."Inventory".name,
-    public."Inventory".description,
-    public."Inventory".location,
-    public."Inventory".image_url
-from public."Inventory"
-where ((public."Inventory".embd <#> embedding) * -1) >= min_similarity 
-order by embd <#> embedding
-limit match_count;
-end;
-$$;
-
-GRANT EXECUTE ON FUNCTION similarity_search_inventory(vector, bigint) TO public;
-GRANT SELECT ON TABLE public."Inventory" TO public;
-    */
-
 export const recipesRouter = createTRPCRouter({
   createRecipeFromPrompt: protectedProcedure
     .input(
@@ -167,6 +139,61 @@ export const recipesRouter = createTRPCRouter({
       });
       return res;
     }),
+  recommendBestIngredients: protectedProcedure
+    .input(
+      z.object({
+        ingredients: z.array(z.string()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const recommendedIngredients = await Promise.all(
+        input.ingredients.map(async (ingredient) => {
+          const embedding = await getEmbedding(ingredient);
+          if (!embedding) {
+            return null;
+          }
+
+          if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+            return null;
+          }
+
+          const res = (await client.rpc("similarity_search_inventory", {
+            embedding,
+            match_count: 5,
+            min_similarity: 0.4,
+          })) as {
+            data: {
+              similarity: number;
+              name: string;
+              description: string;
+              location: string;
+              image_url: string;
+            }[];
+          };
+
+          if (res.data.length === 0 || !res.data[0]) {
+            return null;
+          }
+
+          return res.data;
+        }),
+      );
+
+      const filteredRecommendations = recommendedIngredients
+        .flat()
+        .filter((ingredient) => ingredient !== null);
+
+      const newRecommendations = filteredRecommendations.filter(
+        (recommended) => !input.ingredients.includes(recommended.name),
+      );
+
+      const top3Ingredients = newRecommendations
+        .sort((a, b) => {
+          return a.similarity - b.similarity;
+        })
+        .slice(0, 3);
+      return top3Ingredients;
+    }),
   findRecepieByPrompt: protectedProcedure
     .input(
       z.object({
@@ -230,5 +257,20 @@ export const recipesRouter = createTRPCRouter({
         },
       });
       return res;
+    }),
+  getRecipeById: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const recipe = await ctx.db.recepie.findUnique({
+        where: { id: input.id },
+        include: {
+          Users: {
+            where: {
+              id: { equals: ctx.session?.user.id },
+            },
+          },
+        },
+      });
+      return recipe;
     }),
 });

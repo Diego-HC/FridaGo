@@ -94,6 +94,17 @@ export function getObjectPosition(beta: number, gamma: number) {
   };
 }
 
-export function getBestQueue() {
-  return 1;
+export async function getBestQueue() {
+  const baseUrl = "https://neutral-asp-useful.ngrok-free.app";
+  const res = await fetch(baseUrl + "/get_wait_time", {headers: {'ngrok-skip-browser-warning': 'true'}});
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch best queue");
+  }
+
+  console.log(res);
+  const data = await res.json() as { 'Line 1': number, 'Line 2': number };
+  console.log(data);
+
+  return data["Line 1"] < data["Line 2"] ? 1 : 2;
 }
