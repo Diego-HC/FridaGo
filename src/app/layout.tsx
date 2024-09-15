@@ -6,6 +6,8 @@ import { type Metadata } from "next";
 import { TRPCReactProvider } from "rbrgs/trpc/react";
 import Link from "next/link";
 import { ChartBarIcon, HomeIcon, UserIcon } from "@heroicons/react/outline";
+import { Session } from "inspector/promises";
+import { getServerAuthSession } from "rbrgs/server/auth";
 
 export const metadata: Metadata = {
   title: "FridaGo",
@@ -13,46 +15,84 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const session = await getServerAuthSession();
+
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
         <TRPCReactProvider>
           <div className="mb-16">{children}</div>
         </TRPCReactProvider>
-        <nav className="shadow-t-lg fixed bottom-0 w-full bg-white">
-          <ul className="flex justify-around py-4">
-            <li>
-              <Link
-                href="/"
-                className="flex flex-col items-center text-black hover:text-blue-500"
-              >
-                <HomeIcon className="h-6 w-6" />
-                <span>Home</span>
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/admin"
-                className="flex flex-col items-center text-black hover:text-blue-500"
-              >
-                <UserIcon className="h-6 w-6" />
-                <span>Admin</span>
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/dashboard"
-                className="flex flex-col items-center text-black hover:text-blue-500"
-              >
-                <ChartBarIcon className="h-6 w-6" />
-                <span>Dashboard</span>
-              </Link>
-            </li>
-          </ul>
-        </nav>
+        {session?.user.role === "admin" ? (
+          <nav className="shadow-t-lg fixed bottom-0 w-full bg-white">
+            <ul className="flex justify-around py-4">
+              <li>
+                <Link
+                  href="/"
+                  className="flex flex-col items-center text-black hover:text-blue-500"
+                >
+                  <HomeIcon className="h-6 w-6" />
+                  <span>Home</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/admin"
+                  className="flex flex-col items-center text-black hover:text-blue-500"
+                >
+                  <UserIcon className="h-6 w-6" />
+                  <span>Admin</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/dashboard"
+                  className="flex flex-col items-center text-black hover:text-blue-500"
+                >
+                  <ChartBarIcon className="h-6 w-6" />
+                  <span>Dashboard</span>
+                </Link>
+              </li>
+            </ul>
+          </nav>
+        ) : (
+          session && (
+            <nav className="shadow-t-lg fixed bottom-0 w-full bg-white">
+              <ul className="flex justify-around py-4">
+                <li>
+                  <Link
+                    href="/navigator"
+                    className="flex flex-col items-center text-black hover:text-blue-500"
+                  >
+                    <HomeIcon className="h-6 w-6" />
+                    <span>Navigator</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/dashboard"
+                    className="flex flex-col items-center text-black hover:text-blue-500"
+                  >
+                    <UserIcon className="h-6 w-6" />
+                    <span>Chat</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/list"
+                    className="flex flex-col items-center text-black hover:text-blue-500"
+                  >
+                    <ChartBarIcon className="h-6 w-6" />
+                    <span>List</span>
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          )
+        )}
       </body>
     </html>
   );
