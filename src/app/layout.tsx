@@ -8,6 +8,7 @@ import { SessionProvider } from "next-auth/react";
 import SessionWrapper from "./SessionWrapper";
 import Link from "next/link";
 import { ChartBarIcon, HomeIcon, UserIcon } from "@heroicons/react/outline";
+import { BookCheck, MapPin, ListCheck } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "FridaGo",
@@ -31,20 +32,21 @@ export default async function RootLayout({
           <ul className="flex justify-around py-4">
             <li>
               <Link
-                href="/navigator"
+                href="/dashboard"
                 className="flex flex-col items-center text-black hover:text-blue-500"
               >
-                <HomeIcon className="h-6 w-6" />
-                <span>Navigator</span>
+                <ListCheck className="h-6 w-6" />
+                <span>My List</span>
               </Link>
             </li>
+
             <li>
               <Link
                 href="/dashboard/recipes"
                 className="flex flex-col items-center text-black hover:text-blue-500"
               >
-                <ChartBarIcon className="h-6 w-6" />
-                <span>List</span>
+                <BookCheck className="h-6 w-6" />
+                <span>Recipes</span>
               </Link>
             </li>
 
@@ -59,20 +61,20 @@ export default async function RootLayout({
             </li>
             <li>
               <Link
+                href="/navigator"
+                className="flex flex-col items-center text-black hover:text-blue-500"
+              >
+                <MapPin className="h-6 w-6" />
+                <span>Navigator</span>
+              </Link>
+            </li>
+            <li>
+              <Link
                 href="/admin"
                 className="flex flex-col items-center text-black hover:text-blue-500"
               >
                 <UserIcon className="h-6 w-6" />
                 <span>Admin</span>
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/dashboard"
-                className="flex flex-col items-center text-black hover:text-blue-500"
-              >
-                <ChartBarIcon className="h-6 w-6" />
-                <span>Dashboard</span>
               </Link>
             </li>
           </ul>

@@ -137,7 +137,7 @@ export default function Dashboard() {
   return (
     <div className="bg-slate-50">
       <h2 className="ml-12 bg-slate-50 text-3xl font-semibold text-gray-700">
-        Admin Dashboard
+        My List
       </h2>
 
       <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center gap-8 bg-slate-50 align-middle">
