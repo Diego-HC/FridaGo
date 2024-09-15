@@ -52,14 +52,15 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
+    id            String     @id @default(cuid())
     name          String?
-    email         String?   @unique
+    email         String?    @unique
     emailVerified DateTime?
     image         String?
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
+    UserList      UserList[]
 }
 
 model VerificationToken {
@@ -68,4 +69,30 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Inventory {
+    id          Int      @id @default(autoincrement())
+    name        String   @unique
+    description String
+    location    String
+    image_url   String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    UserList UserList[]
+
+    @@index([name])
+}
+
+model UserList {
+    id       String    @id @default(cuid())
+    quantity Int
+    user     User      @relation(fields: [userId], references: [id])
+    item     Inventory @relation(fields: [inventoryName], references: [name])
+
+    userId        String
+    inventoryName String
+
+    @@index([userId])
 }
