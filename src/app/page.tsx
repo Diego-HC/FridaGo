@@ -129,8 +129,8 @@ export default async function Home() {
                   Login
                 </Link>
               )}
-              
-              <Link
+            </div>
+            <Link
               href="/navigator"
               className="mt-4 rounded-full bg-blue-500 px-6 py-3 text-lg font-semibold text-white transition hover:bg-blue-600"
             >
