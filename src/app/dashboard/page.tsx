@@ -95,7 +95,7 @@ export default function Dashboard() {
       }
     };
 
-    fetchBestIngredients();
+    void fetchBestIngredients();
   }, [lista, findBestIngredientsMatch]);
 
   const handleClearList = async () => {
@@ -184,7 +184,10 @@ export default function Dashboard() {
                       className="bg-white p-1"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeleteItem(product.item.name, product.quantity);
+                        void handleDeleteItem(
+                          product.item.name,
+                          product.quantity,
+                        );
                       }}
                     >
                       <TrashIcon className="h-6 w-6 text-black" />
@@ -262,14 +265,10 @@ export default function Dashboard() {
                 previousConversation: { messages: messages },
               });
               console.log(res);
-              if (
-                res?.chatResponse !== undefined &&
-                res?.chatResponse !== null &&
-                res?.chatResponse !== ""
-              ) {
+              if (res?.chatResponse?.length && res?.chatResponse?.length > 0) {
                 setMessages((prev) => [
                   ...prev,
-                  { role: "assistant", content: res?.chatResponse! },
+                  { role: "assistant", content: res?.chatResponse ?? "" },
                 ]);
                 if (res?.context) {
                   const seted = new Set<{
@@ -321,7 +320,7 @@ export default function Dashboard() {
                 )
                   .slice(0, 5)
                   .map((item) => (
-                    <RecipeComp key={item} id={item!} />
+                    <RecipeComp key={item} id={item} />
                   ))
               }
             </div>
