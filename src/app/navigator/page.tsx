@@ -18,12 +18,12 @@ type Orientation = {
   gamma: number;
 };
 
-// const destinationCoords = {
-//   latitude: 25.6487015,
-//   longitude: -100.2898314,
-//   // latitude: 25.647943,
-//   // longitude: -100.218141,
-// };
+const destinationCoords = {
+  latitude: 25.6487015,
+  longitude: -100.2898314,
+  // latitude: 25.647943,
+  // longitude: -100.218141,
+};
 
 const destinations = [
   {
@@ -66,18 +66,18 @@ const queues = [
   },
 ];
 
-function getCoords({ product, queue }: { product?: number; queue?: number }):
-  | {
-      latitude: number;
-      longitude: number;
-    }
-  | undefined {
+function getCoords({ product, queue }: { product?: number; queue?: number }): {
+  latitude: number;
+  longitude: number;
+} {
   if (product != null && destinations[product]) {
     return destinations[product];
   }
   if (queue != null && queues[queue]) {
     return queues[queue];
   }
+
+  return destinationCoords;
 }
 
 async function getMedia() {
@@ -140,6 +140,7 @@ function NavigatorInner() {
   const [scale, setScale] = useState(1);
   const [visible, setVisible] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [imgSource, setImgSource] = useState("");
 
   useEffect(() => {
     void getMedia();
@@ -174,6 +175,11 @@ function NavigatorInner() {
       setBestQueue(bestQueue);
     } else if (dest != null) {
       setCurrentDestination(destinations.findIndex((d) => d.name === dest));
+    }
+
+    const imageUrl = searchParams.get("imageUrl");
+    if (imageUrl) {
+      setImgSource(decodeURIComponent(imageUrl));
     }
   }, [searchParams]);
 
@@ -291,13 +297,22 @@ function NavigatorInner() {
           transform: "translate(50%, -20vh)",
         }}
       >
-        <div
+        {/* <div
           style={{
             ...objectStyle,
             width: "50px",
             height: "50px",
             backgroundColor: "red",
             borderRadius: "50%",
+          }}
+        /> */}
+        <img
+          src={imgSource}
+          alt="Product"
+          style={{
+            ...objectStyle,
+            width: "50px",
+            height: "50px",
           }}
         />
       </div>
