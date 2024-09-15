@@ -63,8 +63,20 @@ export default function Dashboard() {
     api.lists.getUsersLists.useQuery();
   const { mutateAsync } = api.lists.addItemToList.useMutation();
   const utils = api.useUtils();
+  const { mutateAsync: refreshEmbeddings } =
+    api.embeddings.processAllRecipes.useMutation();
+
+  const { mutateAsync: processMessag } =
+    api.embeddings.processMessage.useMutation();
+
+  const [messages, setMessages] = React.useState<
+    {
+      role: "user" | "assistant";
+      content: string;
+    }[]
+  >([]);
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center align-middle">
+    <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center align-middle">
       <Card className="h-4/5 w-2/3">
         <CardHeader>My list</CardHeader>
         <CardContent>
@@ -92,57 +104,67 @@ export default function Dashboard() {
                 ))
               )}
             </div>
-            {/* <Formik
-              initialValues={{ productName: "", quantity: 1 }}
-              onSubmit={async (values) => {
-                await mutateAsync({
-                  productName: values.productName,
-                  quantity: values.quantity,
-                });
-                await utils.lists.getUsersLists.invalidate();
-              }}
-            >
-              {({ values, setFieldValue }) => (
-                <Form>
-                  <div className="flex justify-center space-x-4">
-                    <SelectProduct
-                      onChange={(value) => setFieldValue("productName", value)}
-                      value={values.productName}
-                    />
-                    <Field
-                      name="quantity"
-                      as={Input}
-                      type="number"
-                      min={1}
-                      className="w-1/3"
-                    />
-                    <Button type="submit">Add</Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-            <div>
-              {isLoading ? (
-                <Card>
-                  <Skeleton className="h-10" />
-                </Card>
-              ) : (
-                data?.map((product) => (
-                  <Card
-                    key={product.id}
-                    className="flex items-center p-4 align-middle"
-                  >
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="mr-4 h-12 w-12 rounded-lg object-cover"
-                    />
-                    <p className="font-semibold">{product.name}</p>
-                  </Card>
-                ))
-              )}
-            </div> */}
           </>
+          <Button
+            className="mt-4"
+            onClick={async () => {
+              await refreshEmbeddings();
+            }}
+          >
+            AddEmbs
+          </Button>
+        </CardContent>
+      </Card>
+      <Card className="h-3/5 w-2/3">
+        <CardHeader>Assistant</CardHeader>
+        <CardContent>
+          <div className="flex flex-col">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`${
+                  message.role === "user" ? "text-right" : "text-left"
+                }`}
+              >
+                {message.content}
+              </div>
+            ))}
+          </div>
+          <Formik
+            initialValues={{ message: "", messages: [] }}
+            onSubmit={async (values) => {
+              if (!values.message || values.message === "") {
+                return;
+              }
+              setMessages((prev) => [
+                ...prev,
+                { role: "user", content: values.message! },
+              ]);
+              const res = await processMessag({ message: values.message });
+              console.log(res);
+              if (
+                res?.chatResponse !== undefined &&
+                res?.chatResponse !== null &&
+                res?.chatResponse !== ""
+              ) {
+                setMessages((prev) => [
+                  ...prev,
+                  { role: "assistant", content: res?.chatResponse! },
+                ]);
+              }
+            }}
+          >
+            {({ values, setFieldValue }) => (
+              <Form className="flex">
+                <Field
+                  name="message"
+                  as={Input}
+                  placeholder="Ask me anything"
+                />
+                <Button type="submit">Send</Button>
+              </Form>
+            )}
+          </Formik>
         </CardContent>
       </Card>
     </div>

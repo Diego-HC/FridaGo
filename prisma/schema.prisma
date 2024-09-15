@@ -79,6 +79,7 @@ model Inventory {
   embd        Unsupported("vector")?
   UserList    UserList[]
   Recepies    Recepie[]              @relation("InventoryToRecepie")
+  VectorStore VectorStore[]
 
   @@index([name])
 }
@@ -103,6 +104,19 @@ model Recepie {
   embd         Unsupported("vector")?
   Ingredients  Inventory[]            @relation("InventoryToRecepie")
   Users        User[]                 @relation("RecepieToUser")
+  VectorStore  VectorStore[]
 
   @@index([name])
+}
+
+model VectorStore {
+  id        Int                   @id @default(autoincrement())
+  vector    Unsupported("vector")
+  context   String                @unique
+  createdAt DateTime              @default(now())
+
+  RecipieCorresponds   Recepie?   @relation(fields: [recepieId], references: [id])
+  InventoryCorresponds Inventory? @relation(fields: [inventoryId], references: [id])
+  recepieId            String?
+  inventoryId          Int?
 }
